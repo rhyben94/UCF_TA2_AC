@@ -5,17 +5,24 @@
 # Other requests shall be referred to DARPA’s Public Release Center via email at prc@darpa.mil.
 
 # Run this command as below: The argument must be a .metadata file or directory containing metadata files.
-# ./with_file_metadata.py FILE_OR_DIR
+# ./with_file_metadata.py qid.metadata
 
 import argparse
 from pathlib import Path
 import metadata_utils
+import PlayerModel
 
 
 def process_metadata_file(fname):
     print('Working on file', fname)
     msgs = metadata_utils.read_file(fname)
     print(f'Got msgs {len(msgs)}')
+    for m in msgs:
+        msg = m['msg']
+        if msg['sub_type'] == 'Status:SurveyResponse':
+            PlayerModel.playerstate.handle_survey_values(m['data']['values'],
+                                                         msg['experiment_id'],
+                                                         msg['trial_id'])
 
 
 def main(pth):
