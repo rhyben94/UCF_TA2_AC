@@ -613,88 +613,93 @@ if RMET_36 == 3:
 ## Measure median cutoff categorizations
 ## Note I’ve been using 0 = Low and 1 = High, but could go back to string values if that makes things easier
 
-if SBSOD_Score > SBSOD_MedianCutoff:
-    SBSOD_MedianSplit_Score = 1
-else:
-    SBSOD_MedianSplit_Score = 0
-print("SBSOD_MedianSplit_Score: ")
-print(SBSOD_MedianSplit_Score)
+def main():
+    if SBSOD_Score > SBSOD_MedianCutoff:
+        SBSOD_MedianSplit_Score = 1
+    else:
+        SBSOD_MedianSplit_Score = 0
+    print("SBSOD_MedianSplit_Score: ")
+    print(SBSOD_MedianSplit_Score)
 
 
-if VGEM_MinecraftUSAR_Score > VGEM_MinecraftUSAR_MedianCutoff:
-    VGEM_MinecraftUSAR_MedianSplit_Score = 1
-else:
-    VGEM_MinecraftUSAR_MedianSplit_Score = 0
-print("VGEM_MinecraftUSAR_MedianSplit_Score: ")
-print(VGEM_MinecraftUSAR_MedianSplit_Score)
+    if VGEM_MinecraftUSAR_Score > VGEM_MinecraftUSAR_MedianCutoff:
+        VGEM_MinecraftUSAR_MedianSplit_Score = 1
+    else:
+        VGEM_MinecraftUSAR_MedianSplit_Score = 0
+    print("VGEM_MinecraftUSAR_MedianSplit_Score: ")
+    print(VGEM_MinecraftUSAR_MedianSplit_Score)
 
 
-if Competency_Score > Competency_MedianCutoff:
-    Competency_MedianSplit_Score = 1
-else:
-    Competency_MedianSplit_Score = 0
-print("Competency_MedianSplit_Score: ")
-print(Competency_MedianSplit_Score)
+    if Competency_Score > Competency_MedianCutoff:
+        Competency_MedianSplit_Score = 1
+    else:
+        Competency_MedianSplit_Score = 0
+    print("Competency_MedianSplit_Score: ")
+    print(Competency_MedianSplit_Score)
 
 
-if PsychologicalCollectivism_Score > PsychologicalCollectivism_MedianCutoff:
-    PsychologicalCollectivism_MedianSplit_Score = 1
-else:
-    PsychologicalCollectivism_MedianSplit_Score = 0
-print("PsychologicalCollectivism_MedianSplit_Score: ")
-print(PsychologicalCollectivism_MedianSplit_Score)
+    if PsychologicalCollectivism_Score > PsychologicalCollectivism_MedianCutoff:
+        PsychologicalCollectivism_MedianSplit_Score = 1
+    else:
+        PsychologicalCollectivism_MedianSplit_Score = 0
+    print("PsychologicalCollectivism_MedianSplit_Score: ")
+    print(PsychologicalCollectivism_MedianSplit_Score)
 
 
-if RMET_Score > RMET_MedianCutoff:
-    RMET_MedianSplit_Score = 1
-else:
-    RMET_MedianSplit_Score = 0
-print("RMET_MedianSplit_Score: ")
-print(RMET_MedianSplit_Score)
+    if RMET_Score > RMET_MedianCutoff:
+        RMET_MedianSplit_Score = 1
+    else:
+        RMET_MedianSplit_Score = 0
+    print("RMET_MedianSplit_Score: ")
+    print(RMET_MedianSplit_Score)
 
 
-if SociableDominance_Score > SociableDominance_MedianCutoff:
-    SociableDominance_MedianSplit_Score = 1
-else:
-    SociableDominance_MedianSplit_Score = 0
-print("SociableDominance_MedianSplit_Score: ")
-print(SociableDominance_MedianSplit_Score)
+    if SociableDominance_Score > SociableDominance_MedianCutoff:
+        SociableDominance_MedianSplit_Score = 1
+    else:
+        SociableDominance_MedianSplit_Score = 0
+    print("SociableDominance_MedianSplit_Score: ")
+    print(SociableDominance_MedianSplit_Score)
 
 
-## Measure median cutoff categorizations
+    ## Measure median cutoff categorizations
 
-TaskPotential_Score = sum([SBSOD_MedianSplit_Score , VGEM_MinecraftUSAR_MedianSplit_Score , Competency_MedianSplit_Score])
+    TaskPotential_Score = sum([SBSOD_MedianSplit_Score, VGEM_MinecraftUSAR_MedianSplit_Score, Competency_MedianSplit_Score])
 
-TeamPotential_Score = sum([PsychologicalCollectivism_MedianSplit_Score , RMET_MedianSplit_Score , SociableDominance_MedianSplit_Score])
+    TeamPotential_Score = sum([PsychologicalCollectivism_MedianSplit_Score, RMET_MedianSplit_Score, SociableDominance_MedianSplit_Score])
 
 
-if TaskPotential_Score > TaskPotential_MustBeHighIn:
-    TaskPotential_Category = 1
-else:
-    TaskPotential_Category = 0
+    if TaskPotential_Score > TaskPotential_MustBeHighIn:
+        TaskPotential_Category = 1
+    else:
+        TaskPotential_Category = 0
 
-if TeamPotential_Score > TeamPotential_MustBeHighIn:
-    TeamPotential_Category = 1
-else:
-    TeamPotential_Category = 0
+    if TeamPotential_Score > TeamPotential_MustBeHighIn:
+        TeamPotential_Category = 1
+    else:
+        TeamPotential_Category = 0
 
-## Profile Outcome
+    ## Profile Outcome
 
-if TaskPotential_Score == 1 and TeamPotential_Score == 1:
-    PlayerProfile = "HighTaskHighTeam"
-elif TaskPotential_Score == 1 and TeamPotential_Score == 0:
-    PlayerProfile = "HighTaskLowTeam"
-if TaskPotential_Score == 0 and TeamPotential_Score == 1:
-    PlayerProfile = "LowTaskHighTeam"
-if TaskPotential_Score == 0 and TeamPotential_Score == 0:
-    PlayerProfile = "LowTaskLowTeam"
+    if TaskPotential_Score == 1 and TeamPotential_Score == 1:
+        PlayerProfile = "HighTaskHighTeam"
+    elif TaskPotential_Score == 1 and TeamPotential_Score == 0:
+        PlayerProfile = "HighTaskLowTeam"
+    if TaskPotential_Score == 0 and TeamPotential_Score == 1:
+        PlayerProfile = "LowTaskHighTeam"
+    if TaskPotential_Score == 0 and TeamPotential_Score == 0:
+        PlayerProfile = "LowTaskLowTeam"
 
-print("Player Profile: ")
-print(PlayerProfile)
-## The following variables should be published back to the message bus with appropriate tagging information
+    print("Player Profile: ")
+    print(PlayerProfile)
+    ## The following variables should be published back to the message bus with appropriate tagging information
 
-##The player’s name
-##The player’s role
-##The player’s TaskPotential
-##The player’s TeamPotential
-##The player’s PlayerProfile
+    ##The player’s name
+    ##The player’s role
+    ##The player’s TaskPotential
+    ##The player’s TeamPotential
+    ##The player’s PlayerProfile
+
+if __name__ == "__main__":
+    main()
+
