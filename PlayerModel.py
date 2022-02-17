@@ -159,7 +159,7 @@ class PlayerState:
             print('Compute and publish player profile message')
             self.compute_player_profile(participant_id)
         else:
-            print('not enough data\n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
+            print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
 
         print()
 

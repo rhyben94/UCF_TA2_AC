@@ -775,8 +775,10 @@ def get_rmet_score(qids):
 ## Measure median cutoff categorizations
 ## Note I’ve been using 0 = Low and 1 = High, but could go back to string values if that makes things easier
 
-def main():
-    if SBSOD_Score > SBSOD_MedianCutoff:
+def compute_player_profile(sbsod_score, vgem_score,
+                           psychological_collectivism_score, rmet_score,
+                           sociableDominance_score):
+    if sbsod_score > SBSOD_MedianCutoff:
         SBSOD_MedianSplit_Score = 1
     else:
         SBSOD_MedianSplit_Score = 0
@@ -784,7 +786,7 @@ def main():
     print(SBSOD_MedianSplit_Score)
 
 
-    if VGEM_MinecraftUSAR_Score > VGEM_MinecraftUSAR_MedianCutoff:
+    if vgem_score > VGEM_MinecraftUSAR_MedianCutoff:
         VGEM_MinecraftUSAR_MedianSplit_Score = 1
     else:
         VGEM_MinecraftUSAR_MedianSplit_Score = 0
@@ -800,7 +802,7 @@ def main():
     print(Competency_MedianSplit_Score)
 
 
-    if PsychologicalCollectivism_Score > PsychologicalCollectivism_MedianCutoff:
+    if psychological_collectivism_score > PsychologicalCollectivism_MedianCutoff:
         PsychologicalCollectivism_MedianSplit_Score = 1
     else:
         PsychologicalCollectivism_MedianSplit_Score = 0
@@ -808,7 +810,7 @@ def main():
     print(PsychologicalCollectivism_MedianSplit_Score)
 
 
-    if RMET_Score > RMET_MedianCutoff:
+    if rmet_score > RMET_MedianCutoff:
         RMET_MedianSplit_Score = 1
     else:
         RMET_MedianSplit_Score = 0
@@ -816,7 +818,7 @@ def main():
     print(RMET_MedianSplit_Score)
 
 
-    if SociableDominance_Score > SociableDominance_MedianCutoff:
+    if sociableDominance_score > SociableDominance_MedianCutoff:
         SociableDominance_MedianSplit_Score = 1
     else:
         SociableDominance_MedianSplit_Score = 0
@@ -854,6 +856,9 @@ def main():
 
     print("Player Profile: ")
     print(PlayerProfile)
+    return {'player-profile': PlayerProfile,
+            'team-potential-category': TeamPotential_Category,
+            'task-potential-category': TaskPotential_Category}
     ## The following variables should be published back to the message bus with appropriate tagging information
 
     ##The player’s name
@@ -861,6 +866,11 @@ def main():
     ##The player’s TaskPotential
     ##The player’s TeamPotential
     ##The player’s PlayerProfile
+
+def main():
+    compute_player_profile(SBSOD_Score, VGEM_MinecraftUSAR_Score,
+                           PsychologicalCollectivism_Score, RMET_Score,
+                           SociableDominance_Score)
 
 if __name__ == "__main__":
     main()
