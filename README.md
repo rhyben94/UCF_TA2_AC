@@ -106,3 +106,6 @@ Inputs/Messages for subscription:
 
 Outputs:
 - [Participant_Id, PlayerRole, TaskPotential_Category, TeamPotential_Category, PlayerProfile]
+
+#### Engg notes
+ * See [Agent Readme](./agent-dev-README.md) to learn about how to run the agent.
