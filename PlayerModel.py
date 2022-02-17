@@ -3,6 +3,7 @@
 # Other requests shall be referred to DARPA’s Public Release Center via email at prc@darpa.mil.
 
 from pprint import pprint
+import PlayerProfiler_Draft as player_profiler
 
 # player = {'sbsod': [f'SBSOD_{x}' for x in range(1, 16)]}
 # vgem = {f'VGEM_{x}': 'QID8_' for x in range(1, 16)}
@@ -138,11 +139,11 @@ class PlayerState:
     def __init__(self):
         self.players = {}
         self.req_qid_set = get_required_qids()
-        print('QID set', len(self.req_qid_set))
+        # print('QID set', len(self.req_qid_set))
 
     def handle_survey_values(self, vals, exp_id, trial_id):
         participant_id = vals['participantid']
-        print('for participant', participant_id)
+        print('\nfor participant', participant_id)
         if participant_id not in self.players:
             self.players[participant_id] = {'experiment_id': exp_id,
                                             'trials': [],
@@ -156,10 +157,25 @@ class PlayerState:
 
         if collected and have_all:
             print('Compute and publish player profile message')
+            self.compute_player_profile(participant_id)
         else:
-            print('collected any:', collected, '\nhave all qids:', have_all)
+            print('not enough data\n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
 
         print()
+
+    def compute_player_profile(self, participant_id):
+        converted = self.convert_quid_to_internal(participant_id)
+        # pprint(converted)
+        sbsod_score = player_profiler.get_SBSOD_SCORE(converted['sbsod'])
+        vgem_score = player_profiler.get_vgem_score(converted['vgem'])
+        sc_score = player_profiler.get_PsychologicalCollectivism_Score(converted['psychologicalcollectivism'])
+        social_dominance_score = player_profiler.get_SociableDominance_Score(converted['sociabledominance'])
+        rmet_score = player_profiler.get_rmet_score(converted['rmet'])
+        print('sbsod score', sbsod_score)
+        print('vgem score', vgem_score)
+        print('psychological collectivism score', sc_score)
+        print('sociable dominance score', social_dominance_score)
+        print('rmet score', rmet_score)
 
     def collect_qid_vals(self, participant_id, vals):
         collected = False
@@ -188,6 +204,15 @@ class PlayerState:
         if 0 == len(needed):
             return True
         return False
+
+    def convert_quid_to_internal(self, participant_id):
+        converted = {}
+        for k, vals in player.items():
+            converted[k] = {}
+            for k1, qid in vals.items():
+                qval = self.players[participant_id]['qid'][qid]
+                converted[k][k1] = qval
+        return converted
 
 
 playerstate = PlayerState()

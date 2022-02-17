@@ -118,6 +118,15 @@ elif VGEM_4 == 7:
 else:
     print("Something is wrong with the value of VGEM_4")
 
+def get_vgem_4(qid_val):
+    lu = {1: 0, 2: 16,
+          3: 33, 4: 50,
+          6: 82,
+          7: 100}
+    if qid_val not in lu:
+        print("Something is wrong with the value of VGEM_4", qid_val)
+        return None
+    return lu[qid_val]
 
 ##{"ImportId":"QID868_3"}
 ##b0_Q19_3
@@ -138,6 +147,16 @@ elif VGEM_5 == 7:
 else:
     print("Something is wrong with the value of VGEM_5")
 
+def get_vgem_5(qid_val):
+    lu = {1: 0, 2: 16,
+          3: 33, 4: 50,
+          6: 82,
+          7: 100}
+    if qid_val not in lu:
+        print("Something is wrong with the value of VGEM_5", qid_val)
+        return None
+    return lu[qid_val]
+
 ##{"ImportId":"QID868_5"}
 ##b0_Q19_5
 ##For the following, please indicate how regularly you: - Play video games which require participation in a team
@@ -156,6 +175,16 @@ elif VGEM_6 == 7:
     VGEM_6 = 100
 else:
     print("Something is wrong with the value of VGEM_6")
+
+def get_vgem_6(qid_val):
+    lu = {1: 0, 2: 16,
+          3: 33, 4: 50,
+          6: 82,
+          7: 100}
+    if qid_val not in lu:
+        print("Something is wrong with the value of VGEM_6", qid_val)
+        return None
+    return lu[qid_val]
 
 ##{"ImportId":"QID868_6"}
 ##b0_Q19_6
@@ -176,6 +205,15 @@ elif VGEM_7 == 7:
 else:
     print("Something is wrong with the value of VGEM_7")
 
+def get_vgem_7(qid_val):
+    lu = {1: 0, 2: 16,
+          3: 33, 4: 50,
+          6: 82,
+          7: 100}
+    if qid_val not in lu:
+        print("Something is wrong with the value of VGEM_7", qid_val)
+        return None
+    return lu[qid_val]
 ##{"ImportId":"QID872_1"}
 ##b0_Q15_1
 ##Learning the layout of a new virtual environment
@@ -518,8 +556,45 @@ RMET_36 = 1
 SBSOD_Score = sum([SBSOD_1, abs(SBSOD_2 - 8) , SBSOD_3 , SBSOD_4 , SBSOD_5 , abs(SBSOD_6 - 8 ) , SBSOD_7 , abs(SBSOD_8 - 8) , SBSOD_9 , abs(SBSOD_10 - 8) , abs(SBSOD_11 - 8) , abs(SBSOD_12 - 8) , abs(SBSOD_13 - 8) , SBSOD_14 , abs(SBSOD_15-8)])/15
 ##print("SBSOD Score: ")
 ##print(SBSOD_Score)
+def get_SBSOD_SCORE(qids):
+    return sum([qids['SBSOD_1'],
+                abs(qids['SBSOD_2'] - 8),
+                qids['SBSOD_3'],
+                qids['SBSOD_4'],
+                qids['SBSOD_5'],
+                abs(qids['SBSOD_6'] - 8),
+                qids['SBSOD_7'],
+                abs(qids['SBSOD_8'] - 8),
+                qids['SBSOD_9'],
+                abs(qids['SBSOD_10'] - 8),
+                abs(qids['SBSOD_11'] - 8),
+                abs(qids['SBSOD_12'] - 8),
+                abs(qids['SBSOD_13'] - 8),
+                qids['SBSOD_14'],
+                abs(qids['SBSOD_15'] - 8)]) / 15
 
 VGEM_MinecraftUSAR_Score = sum([VGEM_1 , VGEM_2 , VGEM_3 , VGEM_4 , VGEM_5 , VGEM_6 , VGEM_7 , VGEM_8 , VGEM_9 , VGEM_10 , VGEM_11 , VGEM_12 , VGEM_13 , VGEM_14 , VGEM_15])/15
+
+
+def get_vgem_score(qids):
+    computed_vals = [qids['VGEM_1'] * 5,
+                     qids['VGEM_2'] * 5,
+                     qids['VGEM_3'] * 5,
+
+                     get_vgem_4(qids['VGEM_4']),
+                     get_vgem_5(qids['VGEM_5']),
+                     get_vgem_6(qids['VGEM_6']),
+                     get_vgem_7(qids['VGEM_7']),
+
+                     qids['VGEM_8'],
+                     qids['VGEM_9'],
+                     qids['VGEM_10'],
+                     qids['VGEM_11'],
+                     qids['VGEM_12'],
+                     qids['VGEM_13'],
+                     qids['VGEM_14'],
+                     qids['VGEM_15']]
+    return sum(computed_vals) / len(computed_vals)
 ##print("VGEM_MinecraftUSAR_Score: ")
 ##print(VGEM_MinecraftUSAR_Score)
 
@@ -527,9 +602,20 @@ PsychologicalCollectivism_Score = sum([PsychologicalCollectivism_1 , Psychologic
 ##print("PsychologicalCollectivism_Score: ")
 ##print(PsychologicalCollectivism_Score)
 
+
+def get_PsychologicalCollectivism_Score(qids):
+    vals = qids.values()
+    return sum(vals) / len(vals)
+
+
 SociableDominance_Score = sum([SociableDominance_1 , SociableDominance_2 , SociableDominance_3 , SociableDominance_4 , SociableDominance_5 , SociableDominance_6 , SociableDominance_7 , SociableDominance_8 , SociableDominance_9 , SociableDominance_10 , SociableDominance_11 , SociableDominance_12 , SociableDominance_13 , SociableDominance_14 , SociableDominance_15])/15
 ##print("SociableDominance_Score: ")
 ##print(SociableDominance_Score)
+
+
+def get_SociableDominance_Score(qids):
+    vals = qids.values()
+    return sum(vals) / len(vals)
 
 ## The correct answers for the Reading the Mind in the Eyes Test are listed here in tandem with their corresponding item number (i.e., the correct answer to RMET_1 is 1 and the correct answer to RMET_27 is 2)
 
@@ -609,6 +695,82 @@ if RMET_36 == 3:
 
 ##print("RMET_Score: ")
 ##print(RMET_Score)
+
+def get_rmet_score(qids):
+    RMET_Score = 0
+    if qids['RMET_1'] == 1:
+        RMET_Score += 1
+    if qids['RMET_2'] == 2:
+        RMET_Score += 1
+    if qids['RMET_3'] == 3:
+        RMET_Score += 1
+    if qids['RMET_4'] == 2:
+        RMET_Score += 1
+    if qids['RMET_5'] == 3:
+        RMET_Score += 1
+    if qids['RMET_6'] == 2:
+        RMET_Score += 1
+    if qids['RMET_7'] == 3:
+        RMET_Score += 1
+    if qids['RMET_8'] == 1:
+        RMET_Score += 1
+    if qids['RMET_9'] == 4:
+        RMET_Score += 1
+    if qids['RMET_10'] == 1:
+        RMET_Score += 1
+    if qids['RMET_11'] == 3:
+        RMET_Score += 1
+    if qids['RMET_12'] == 3:
+        RMET_Score += 1
+    if qids['RMET_13'] == 2:
+        RMET_Score += 1
+    if qids['RMET_14'] == 4:
+        RMET_Score += 1
+    if qids['RMET_15'] == 1:
+        RMET_Score += 1
+    if qids['RMET_16'] == 2:
+        RMET_Score += 1
+    if qids['RMET_17'] == 1:
+        RMET_Score += 1
+    if qids['RMET_18'] == 1:
+        RMET_Score += 1
+    if qids['RMET_19'] == 4:
+        RMET_Score += 1
+    if qids['RMET_20'] == 2:
+        RMET_Score += 1
+    if qids['RMET_21'] == 2:
+        RMET_Score += 1
+    if qids['RMET_22'] == 1:
+        RMET_Score += 1
+    if qids['RMET_23'] == 3:
+        RMET_Score += 1
+    if qids['RMET_24'] == 1:
+        RMET_Score += 1
+    if qids['RMET_25'] == 4:
+        RMET_Score += 1
+    if qids['RMET_26'] == 3:
+        RMET_Score += 1
+    if qids['RMET_27'] == 2:
+        RMET_Score += 1
+    if qids['RMET_28'] == 1:
+        RMET_Score += 1
+    if qids['RMET_29'] == 4:
+        RMET_Score += 1
+    if qids['RMET_30'] == 2:
+        RMET_Score += 1
+    if qids['RMET_31'] == 2:
+        RMET_Score += 1
+    if qids['RMET_32'] == 1:
+        RMET_Score += 1
+    if qids['RMET_33'] == 4:
+        RMET_Score += 1
+    if qids['RMET_34'] == 3:
+        RMET_Score += 1
+    if qids['RMET_35'] == 2:
+        RMET_Score += 1
+    if qids['RMET_36'] == 3:
+        RMET_Score += 1
+    return RMET_Score
 
 ## Measure median cutoff categorizations
 ## Note I’ve been using 0 = Low and 1 = High, but could go back to string values if that makes things easier
