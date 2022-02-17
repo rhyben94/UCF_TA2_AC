@@ -141,13 +141,31 @@ class PlayerState:
         self.req_qid_set = get_required_qids()
         # print('QID set', len(self.req_qid_set))
 
+    def handle_trial_start(self, client_info, exp_id, trial_id):
+        for ci in client_info:
+            participant_id = ci['participant_id']
+            callsign = ci['callsign']
+            print('Got ', participant_id, callsign)
+            if participant_id not in self.players:
+                self.players[participant_id] = self.make_new_player(exp_id, trial_id)
+            if trial_id not in self.players[participant_id]['trials']:
+                self.players[participant_id]['trials'].append(trial_id)
+            if 'callsign' in self.players[participant_id]:
+                old = self.players[participant_id]['callsign']
+                if old != callsign:
+                    print(f'Player {participant_id} call sign changed: {old} -> {callsign}')
+            self.players[participant_id]['callsign'] = callsign
+
+    def make_new_player(self, exp_id, trial_id):
+        return {'experiment_id': exp_id,
+                'trials': [trial_id],
+                'qid': {}}
+
     def handle_survey_values(self, vals, exp_id, trial_id):
         participant_id = vals['participantid']
         print('\nfor participant', participant_id)
         if participant_id not in self.players:
-            self.players[participant_id] = {'experiment_id': exp_id,
-                                            'trials': [],
-                                            'qid': {}}
+            self.players[participant_id] = self.make_new_player(exp_id, trial_id)
 
         if trial_id not in self.players[participant_id]['trials']:
             self.players[participant_id]['trials'].append(trial_id)
@@ -157,7 +175,9 @@ class PlayerState:
 
         if collected and have_all:
             print('Compute and publish player profile message')
-            self.compute_player_profile(participant_id)
+            player_profile = self.compute_player_profile(participant_id)
+            print('Player Profile')
+            pprint(player_profile)
         else:
             print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
 
@@ -176,6 +196,14 @@ class PlayerState:
         print('psychological collectivism score', sc_score)
         print('sociable dominance score', social_dominance_score)
         print('rmet score', rmet_score)
+        player_profile = player_profiler.compute_player_profile(sbsod_score, vgem_score, sc_score,
+                                                                rmet_score, social_dominance_score)
+        player_profile['participant_id'] = participant_id
+        player_profile['callsign'] = 'not_available'
+        if 'callsign' in self.players[participant_id]:
+            player_profile['callsign'] = self.players[participant_id]['callsign']
+
+        return player_profile
 
     def collect_qid_vals(self, participant_id, vals):
         collected = False

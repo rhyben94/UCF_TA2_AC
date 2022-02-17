@@ -19,10 +19,15 @@ def process_metadata_file(fname):
     print(f'Got msgs {len(msgs)}')
     for m in msgs:
         msg = m['msg']
+        header = m['header']
+        dat = m['data']
+        exp_id = msg['experiment_id']
+        trial_id = msg['trial_id']
         if msg['sub_type'] == 'Status:SurveyResponse':
             PlayerModel.playerstate.handle_survey_values(m['data']['values'],
-                                                         msg['experiment_id'],
-                                                         msg['trial_id'])
+                                                         exp_id, trial_id)
+        if header['message_type'] == 'trial' and msg['sub_type'] == 'start':
+            PlayerModel.playerstate.handle_trial_start(dat['client_info'], exp_id, trial_id)
 
 
 def main(pth):
