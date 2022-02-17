@@ -31,20 +31,20 @@ IF "%1"=="down" (
 
 IF "%1"=="build" (
   echo "Updating the docker image for %AGENT_NAME%"
-  xcopy /EI ..\..\Tools\ihmc-python-agent-helper-package ihmc-python-agent-helper-package
+@REM   xcopy /EI ..\..\Tools\ihmc-python-agent-helper-package ihmc-python-agent-helper-package
   docker build -t %DOCKER_IMAGE_NAME_LOWERCASE% --build-arg CACHE_BREAKER=%random% .
-  del /S /Q ihmc-python-agent-helper-package
-  rmdir /S /Q ihmc-python-agent-helper-package
+@REM   del /S /Q ihmc-python-agent-helper-package
+@REM   rmdir /S /Q ihmc-python-agent-helper-package
   exit /B
 )
 
 
 IF "%1"=="build_clean" (
   echo "Rebuilding the docker image for %AGENT_NAME%"
-  xcopy /EI ..\..\Tools\ihmc-python-agent-helper-package ihmc-python-agent-helper-package
+@REM   xcopy /EI ..\..\Tools\ihmc-python-agent-helper-package ihmc-python-agent-helper-package
   docker build --no-cache -t %DOCKER_IMAGE_NAME_LOWERCASE% .
-  del /S /Q ihmc-python-agent-helper-package
-  rmdir /S /Q ihmc-python-agent-helper-package
+@REM   del /S /Q ihmc-python-agent-helper-package
+@REM   rmdir /S /Q ihmc-python-agent-helper-package
   exit /B
 )
 
