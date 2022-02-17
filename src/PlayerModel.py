@@ -142,6 +142,7 @@ class PlayerState:
         # print('QID set', len(self.req_qid_set))
 
     def handle_trial_start(self, client_info, exp_id, trial_id):
+        pprint(client_info)
         for ci in client_info:
             participant_id = ci['participant_id']
             callsign = ci['callsign']
@@ -178,8 +179,8 @@ class PlayerState:
             player_profile = self.compute_player_profile(participant_id)
             print('Player Profile')
             pprint(player_profile)
-        else:
-            print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
+        # else:
+        #     print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
 
         print()
 

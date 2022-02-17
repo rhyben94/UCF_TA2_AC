@@ -12,16 +12,26 @@ import uuid
 from asistagenthelper import ASISTAgentHelper
 import logging
 from pprint import pprint
+import PlayerModel
 
 __author__ = 'rcarff'
+
+
+def handle_trial_start(dat, exp_id, trial_id):
+    PlayerModel.playerstate.handle_trial_start(dat['client_info'], exp_id, trial_id)
+
+
+def handle_survey_message(dat, exp_id, trial_id):
+    PlayerModel.playerstate.handle_survey_values(dat['values'], exp_id, trial_id)
 
 
 # This is the function which is called when a message is received for a to
 # topic which this Agent is subscribed to.
 def on_message(topic, header, msg, data, mqtt_message):
     global helper, extra_info, logger
-
     logger.info("Received a message on the topic: " + topic)
+    exp_id = msg['experiment_id']
+    trial_id = msg['trial_id']
     # print('####')
     # pprint(header)
     # pprint(msg)
@@ -33,6 +43,10 @@ def on_message(topic, header, msg, data, mqtt_message):
     if topic == 'trial' and msg['sub_type'] == 'start':
         # handle the start of a trial!!
         logger.info(" - Trial Started with Mission set to: " + data['experiment_mission'])
+        handle_trial_start(data, exp_id, trial_id)
+
+    if msg['sub_type'] == 'Status:SurveyResponse':
+        handle_survey_message(data, exp_id, trial_id)
 
     # elif topic == 'observations/events/player/role_selected':
     #     minutes = int(data['elapsed_milliseconds'] / 1000 / 60)
