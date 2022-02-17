@@ -1,0 +1,21 @@
+{
+    "host": ["mosquitto", "192.168.69.158", "localhost"],
+    "port": "1883",
+    "heartbeats_per_minute": 6,
+    "version_info": {
+        "owner": "IHMC - TA2",
+        "version": "0.0.1",
+        "source": [
+            "https://gitlab.asist.aptima.com/asist/testbed/-/tree/develop/ReferenceAgents/IHMCPythonAgentStarter"
+        ],
+        "publishes": [
+            {"topic": "agent/intervention/My_Complex_Agent/chat", "message_type": "agent", "sub_type": "Intervention:Chat"}
+        ],
+        "subscribes": [
+            {"topic": "trial", "message_type": "trial"},
+            {"topic": "observations/events/mission"},
+            {"topic": "observations/events/player/role_selected", "message_type": "event", "sub_type": "Event:RoleSelected"},
+            {"topic": "observations/events/player/triage", "message_type": "event", "sub_type": "Event:Triage"}
+        ]
+    }
+}

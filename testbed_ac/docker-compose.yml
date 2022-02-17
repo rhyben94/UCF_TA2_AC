@@ -1,0 +1,20 @@
+version: '3.7'
+
+networks:
+  asist_net:
+   external: true    
+    
+services:
+  asist_agent:
+    image: "${DOCKER_IMAGE_NAME_LOWERCASE}:latest"
+    container_name: "${DOCKER_CONTAINER_NAME}"
+    environment:
+      - AGENT_NAME=${AGENT_NAME}
+      - AGENT_MAIN_RUN_FILE=${AGENT_MAIN_RUN_FILE}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./ConfigFolder:/app/ConfigFolder    
+    networks:
+      asist_net:
+        aliases:
+          - "${AGENT_NAME}"
