@@ -105,4 +105,4 @@ Inputs/Messages for subscription:
 
 
 Outputs:
-- [PlayerName, PlayerRole, TaskPotential_Category, TeamPotential_Category, PlayerProfile]
+- [Participant_Id, PlayerRole, TaskPotential_Category, TeamPotential_Category, PlayerProfile]
