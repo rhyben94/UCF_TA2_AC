@@ -22,7 +22,16 @@ def handle_trial_start(dat, exp_id, trial_id):
 
 
 def handle_survey_message(dat, exp_id, trial_id):
-    PlayerModel.playerstate.handle_survey_values(dat['values'], exp_id, trial_id)
+    x = PlayerModel.playerstate.handle_survey_values(dat['values'], exp_id, trial_id)
+    player_profile = x['player_profile']
+    # collected = x['collected']
+    # have_all = x['have_all']
+    if player_profile:
+        topic = f'agent/{helper.agent_name}/player_profile'
+        msg_type = 'agent'
+        sub_type = 'player_profile'
+        sub_type_version = 0.1
+        helper.send_msg(topic, msg_type, sub_type, sub_type_version, data=player_profile, trial_key=trial_id)
 
 
 # This is the function which is called when a message is received for a to

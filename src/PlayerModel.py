@@ -174,6 +174,7 @@ class PlayerState:
         collected = self.collect_qid_vals(participant_id, vals)
         have_all = self.have_all_qids(participant_id)
 
+        player_profile = None
         if collected and have_all:
             print('Compute and publish player profile message')
             player_profile = self.compute_player_profile(participant_id)
@@ -181,8 +182,8 @@ class PlayerState:
             pprint(player_profile)
         # else:
         #     print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
-
-        print()
+        # print()
+        return {'collected': collected, 'have_all': have_all, 'player_profile': player_profile}
 
     def compute_player_profile(self, participant_id):
         converted = self.convert_quid_to_internal(participant_id)
