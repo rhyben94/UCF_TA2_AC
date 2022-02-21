@@ -17,7 +17,7 @@ debug = False
 client = docker.from_env()
 
 URL = "gitlab.asist.aptima.com:5050/asist/testbed/ta2_"
-images = ['ucf_ac_player_profiler']
+images = []  # 'ta2_ucf_ac_player_profiler' Comes from settings.env file
 tagged_images = [[x, URL + x] for x in images]
 version = None
 
@@ -43,6 +43,12 @@ def init_globals():
             if ky == 'LAUNCHER_TAG' and len(kv) >= 2:
                 version = kv[1].strip()
                 print('Got LAUNCHER_TAG:', version)
+
+            if ky == 'DOCKER_IMAGE_NAME_LOWERCASE' and len(kv) >= 2:
+                images.append(kv[1].strip())
+                for x in images:
+                    tagged_images.append([x, URL + x])
+                print('Got DOCKER_IMAGE_NAME_LOWERCASE:', images)
 
 
 def get_image(name):
@@ -145,6 +151,3 @@ if __name__ == '__main__':
         upload_images()
 
     # print_images()
-
-# TODO
-# There should not be any need to push mongodb

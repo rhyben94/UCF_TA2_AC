@@ -62,6 +62,7 @@ class RawMessage(object):
 class RawConnection(object):
     def __init__(self, clientid, host=broker['host'], port=broker['port'],keepalive=broker['keepalive'], bind_address=broker['bind_address']):
         self.__logger = logging.getLogger(__name__)
+        self.__logger.info(f'Connection host {host} port {port}')
         self.__client_id = clientid
         self.__host = host
         self.__port = port
