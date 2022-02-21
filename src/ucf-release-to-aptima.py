@@ -16,7 +16,7 @@ config_j = None
 debug = False
 client = docker.from_env()
 
-URL = "gitlab.asist.aptima.com:5050/asist/testbed/ta2_"
+URL = "gitlab.asist.aptima.com:5050/asist/testbed/"
 images = []  # 'ta2_ucf_ac_player_profiler' Comes from settings.env file
 tagged_images = [[x, URL + x] for x in images]
 version = None

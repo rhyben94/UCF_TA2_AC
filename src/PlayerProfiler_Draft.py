@@ -204,6 +204,8 @@ elif VGEM_7 == 3:
     VGEM_7 = 33
 elif VGEM_7 == 4:
     VGEM_7 = 50
+elif VGEM_7 == 5:
+    VGEM_7 = 66
 elif VGEM_7 == 6:
     VGEM_7 = 82
 elif VGEM_7 == 7:
@@ -214,7 +216,7 @@ else:
 def get_vgem_7(qid_val):
     lu = {1: 0, 2: 16,
           3: 33, 4: 50,
-          6: 82,
+          5: 66, 6: 82,
           7: 100}
     if qid_val not in lu:
         print("Something is wrong with the value of VGEM_7", qid_val)
