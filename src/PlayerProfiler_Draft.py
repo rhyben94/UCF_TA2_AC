@@ -111,6 +111,8 @@ elif VGEM_4 == 3:
     VGEM_4 = 33
 elif VGEM_4 == 4:
     VGEM_4 = 50
+elif VGEM_4 == 5:
+    VGEM_4 == 66
 elif VGEM_4 == 6:
     VGEM_4 = 82
 elif VGEM_4 == 7:
@@ -121,7 +123,7 @@ else:
 def get_vgem_4(qid_val):
     lu = {1: 0, 2: 16,
           3: 33, 4: 50,
-          6: 82,
+          5: 66, 6: 82,
           7: 100}
     if qid_val not in lu:
         print("Something is wrong with the value of VGEM_4", qid_val)
@@ -140,6 +142,8 @@ elif VGEM_5 == 3:
     VGEM_5 = 33
 elif VGEM_5 == 4:
     VGEM_5 = 50
+elif VGEM_5 == 5:
+    VGEM_5 == 66
 elif VGEM_5 == 6:
     VGEM_5 = 82
 elif VGEM_5 == 7:
@@ -150,7 +154,7 @@ else:
 def get_vgem_5(qid_val):
     lu = {1: 0, 2: 16,
           3: 33, 4: 50,
-          6: 82,
+          5: 66, 6: 82,
           7: 100}
     if qid_val not in lu:
         print("Something is wrong with the value of VGEM_5", qid_val)
@@ -169,6 +173,8 @@ elif VGEM_6 == 3:
     VGEM_6 = 33
 elif VGEM_6 == 4:
     VGEM_6 = 50
+elif VGEM_6 == 5:
+    VGEM_6 == 66
 elif VGEM_6 == 6:
     VGEM_6 = 82
 elif VGEM_6 == 7:
@@ -179,7 +185,7 @@ else:
 def get_vgem_6(qid_val):
     lu = {1: 0, 2: 16,
           3: 33, 4: 50,
-          6: 82,
+          5: 66, 6: 82,
           7: 100}
     if qid_val not in lu:
         print("Something is wrong with the value of VGEM_6", qid_val)
@@ -834,14 +840,14 @@ def compute_player_profile(sbsod_score, vgem_score,
 
 
     if TaskPotential_Score > TaskPotential_MustBeHighIn:
-        TaskPotential_Category = 1
+        TaskPotential_Category = 'HighTask'
     else:
-        TaskPotential_Category = 0
+        TaskPotential_Category = 'LowTask'
 
     if TeamPotential_Score > TeamPotential_MustBeHighIn:
-        TeamPotential_Category = 1
+        TeamPotential_Category = 'HighTeam'
     else:
-        TeamPotential_Category = 0
+        TeamPotential_Category = 'LowTeam'
 
     ## Profile Outcome
 
