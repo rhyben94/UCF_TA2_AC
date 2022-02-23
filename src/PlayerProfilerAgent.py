@@ -27,7 +27,7 @@ def handle_survey_message(dat, exp_id, trial_id):
     # collected = x['collected']
     # have_all = x['have_all']
     if player_profile:
-        topic = f'agent/{helper.agent_name}/player_profile'
+        topic = f'agent/{helper.agent_name}/playerprofile'
         msg_type = 'agent'
         sub_type = 'player_profile'
         sub_type_version = 0.1
