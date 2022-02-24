@@ -342,6 +342,7 @@ class ASISTAgentHelper(object):
             self.__on_message_handler(topic, header, msg, data, message.jsondata)
 
         except Exception as ex:
+            self.__logging.exception(str(ex))
             self.__logging.error(str(ex))
             self.__logging.error('RX Error, topic = {0}'.format(topic))
 
