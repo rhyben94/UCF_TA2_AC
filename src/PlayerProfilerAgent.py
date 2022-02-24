@@ -29,8 +29,9 @@ def handle_survey_message(dat, exp_id, trial_id):
     if player_profile:
         topic = f'agent/{helper.agent_name}/playerprofile'
         msg_type = 'agent'
-        sub_type = 'player_profile'
+        sub_type = 'playerprofile'
         sub_type_version = 0.1
+        print('publishing player profile', player_profile)
         helper.send_msg(topic, msg_type, sub_type, sub_type_version, data=player_profile, trial_key=trial_id)
 
 
@@ -38,7 +39,6 @@ def handle_survey_message(dat, exp_id, trial_id):
 # topic which this Agent is subscribed to.
 def on_message(topic, header, msg, data, mqtt_message):
     global helper, extra_info, logger
-    logger.info("Received a message on the topic: " + topic)
     exp_id = msg['experiment_id']
     trial_id = msg['trial_id']
     # print('####')
@@ -51,10 +51,12 @@ def on_message(topic, header, msg, data, mqtt_message):
     # Now handle the message based on the topic.  Refer to Message Specs for the contents of header, msg, and data
     if topic == 'trial' and msg['sub_type'] == 'start':
         # handle the start of a trial!!
+        logger.info("Received a message on the topic: " + topic)
         logger.info(" - Trial Started with Mission set to: " + data['experiment_mission'])
         handle_trial_start(data, exp_id, trial_id)
 
     if msg['sub_type'] == 'Status:SurveyResponse':
+        logger.info("Received a message on the topic: " + topic)
         handle_survey_message(data, exp_id, trial_id)
 
     # elif topic == 'observations/events/player/role_selected':

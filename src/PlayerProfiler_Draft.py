@@ -853,6 +853,7 @@ def compute_player_profile(sbsod_score, vgem_score,
 
     ## Profile Outcome
 
+    PlayerProfile = None
     if TaskPotential_Score == 1 and TeamPotential_Score == 1:
         PlayerProfile = "HighTaskHighTeam"
     elif TaskPotential_Score == 1 and TeamPotential_Score == 0:
@@ -864,6 +865,10 @@ def compute_player_profile(sbsod_score, vgem_score,
 
     print("Player Profile: ")
     print(PlayerProfile)
+    if not PlayerProfile:
+        print('PlayerProfile is none')
+        print('Task Potential Scores', TaskPotential_Score)
+        print('Team Potential Score', TeamPotential_Score)
     return {'player-profile': PlayerProfile,
             'team-potential-category': TeamPotential_Category,
             'task-potential-category': TaskPotential_Category}
