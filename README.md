@@ -4,6 +4,11 @@ Player Profiler Analytic Component
 
 Purpose: Player Profiles on ‘potential’ in teamwork and in taskwork used to inform ASI about player features that may be predictive of performance related behaviors. 
 
+#### Software requirements
+ * MQTT service
+ * Python and required dependencies in `requirements.txt`
+   * Install dependencies as `pip3 install --user -r requirements.txt`
+
 Inputs/Messages for subscription:
 - Survey items
   - SBSOD_1 = {"ImportId":"QID13_1"}
