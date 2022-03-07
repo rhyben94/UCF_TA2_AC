@@ -228,9 +228,9 @@ class PlayerState:
 
     def have_all_qids(self, participant_id):
         have = set().union(self.players[participant_id]['qid'].keys())
-        # print('qid expected, have', participant_id, len(self.req_qid_set), len(have))
+        print('qid expected, have', participant_id, len(self.req_qid_set), len(have))
         needed = self.req_qid_set - have
-        # print('Needed qid', needed)
+        print('Needed qid', needed)
         if 0 == len(needed):
             return True
         return False
