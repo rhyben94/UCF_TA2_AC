@@ -854,13 +854,13 @@ def compute_player_profile(sbsod_score, vgem_score,
     ## Profile Outcome
 
     PlayerProfile = None
-    if TaskPotential_Score == 1 and TeamPotential_Score == 1:
+    if TaskPotential_Category == "HighTask" and TeamPotential_Category == "HighTeam":
         PlayerProfile = "HighTaskHighTeam"
-    elif TaskPotential_Score == 1 and TeamPotential_Score == 0:
+    elif TaskPotential_Category == "HighTask" and TeamPotential_Category == "HighTeam":
         PlayerProfile = "HighTaskLowTeam"
-    if TaskPotential_Score == 0 and TeamPotential_Score == 1:
+    if TaskPotential_Category = "LowTask" and TeamPotential_Score == "HighTeam":
         PlayerProfile = "LowTaskHighTeam"
-    if TaskPotential_Score == 0 and TeamPotential_Score == 0:
+    if TaskPotential_Category = "LowTask" and TeamPotential_Category == "LowTeam":
         PlayerProfile = "LowTaskLowTeam"
 
     print("Player Profile: ")
