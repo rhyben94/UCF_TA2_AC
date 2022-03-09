@@ -64,17 +64,17 @@ Engineer_Transports_Completed_Count_LowerThreshold_List = [0, 1, 1, 1, 1]
 Engineer_Rubble_to_Transports_ratio_UpperThreshold_List = [3, 3, 4, 4, 4]
 Engineer_Rubble_to_Transports_ratio_LowerThreshold_List = [1, 1, .75, .75, .75]
 
-Transporter_Evacuations_Regular_Count_UpperThreshold_List = []
-Transporter_Evacuations_Regular_Count_LowerThreshold_List = []
+Transporter_Evacuations_Regular_Count_UpperThreshold_List = [3, 3, 4, 4, 4]
+Transporter_Evacuations_Regular_Count_LowerThreshold_List = [0, 1, 1, 1, 1]
 
-Transporter_Evacuations_Regular_Count_UpperThreshold_List = []
-Transporter_Evacuations_Regular_Count_LowerThreshold_List = []
+Transporter_Evacuations_Critical_Count_UpperThreshold_List = [1, 1, 2, 2, 2]
+Transporter_Evacuations_Critical_Count_LowerThreshold_List = [0, 0, 1, 1, 1]
 
-Transporter_Transport_Distance_Average_UpperThreshold_List = []
-Transporter_Transport_Distance_Average_LowerThreshold_List = []
+Transporter_Transport_Distance_Average_UpperThreshold_List = [4, 6, 6, 6, 6]
+Transporter_Transport_Distance_Average_LowerThreshold_List = [1, 1, 1, 1, 1]
 
-Transporter_Transport_to_Evacuation_ratio_UpperThreshold_List = []
-Transporter_Transports_Completed_Count_UpperThreshold_List = []
+Transporter_Transport_to_Evacuation_ratio_UpperThreshold_List = [.5, .5, 1, 1, 1]
+Transporter_Transport_to_Evacuation_ratio_LowerThreshold_List = [.1, .1, .1, .1, .1]
 
-Transporter_Transport_to_Evacuation_ratio_LowerThreshold_List = []
-Transporter_Transports_Completed_Count_LowerThreshold_List = []
+Transporter_Transports_Completed_Count_UpperThreshold_List = [4, 4, 6, 6, 6]
+Transporter_Transports_Completed_Count_LowerThreshold_List = [1, 1, 1, 1, 1]
