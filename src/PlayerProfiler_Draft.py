@@ -856,7 +856,7 @@ def compute_player_profile(sbsod_score, vgem_score,
     PlayerProfile = None
     if TaskPotential_Category == "HighTask" and TeamPotential_Category == "HighTeam":
         PlayerProfile = "HighTaskHighTeam"
-    elif TaskPotential_Category == "HighTask" and TeamPotential_Category == "HighTeam":
+    if TaskPotential_Category == "HighTask" and TeamPotential_Category == "LowTeam":
         PlayerProfile = "HighTaskLowTeam"
     if TaskPotential_Category = "LowTask" and TeamPotential_Score == "HighTeam":
         PlayerProfile = "LowTaskHighTeam"
