@@ -151,7 +151,7 @@ For callsign and participant_id, see [client_info.md](../Trial/client_info.md)
 
 ## Frequency of Measurement
 
-Player profile messages will be published at a single instance in response to survey responses being published on the message bus. 
+Player profile messages will be published in response to updates to any data used by the player profiles. For example, when survey responses are published on the message bus, or when the competency test data is published on the bus. 
 
 ## Generating Assessments and Potential Applications
 
