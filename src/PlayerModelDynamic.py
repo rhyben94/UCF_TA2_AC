@@ -1,7 +1,13 @@
 # Ref https://docs.google.com/presentation/d/1Z1QMkGs2D6fZSxsZO9CM2bFzGYzZaVbjTieoUenhQho/edit#slide=id.g117addec6ce_0_45
 
+from pprint import pprint
+
+role_lookup = {'Red': 'medic',
+               'Blue': 'engineer',
+               'Green': 'transporter'}
+
 TaskPotential_LowModifier = 0
-TaskPotential_HighModifier = 0
+TaskPotential_HighModifier = 3
 
 Medic_TaskPotential_RecategorizationThresholds_High_List = [4, 4, 4, 5, 5]
 Medic_TaskPotential_RecategorizationThresholds_Low_List = [-1, 0, 1, 1, 2]
@@ -78,3 +84,19 @@ Transporter_Transport_to_Evacuation_ratio_LowerThreshold_List = [.1, .1, .1, .1,
 
 Transporter_Transports_Completed_Count_UpperThreshold_List = [4, 4, 6, 6, 6]
 Transporter_Transports_Completed_Count_LowerThreshold_List = [1, 1, 1, 1, 1]
+
+
+def init_from_player_profile(player_info, player_profile):
+    # print('Player Info')
+    # pprint(player_info)
+    # print('Player Profile')
+    # pprint(player_profile)
+
+    # Step 1
+    player_info['TaskPotential_Start'] = player_profile['task-potential-category']
+
+    # Step 2
+    if player_info['TaskPotential_Start'] == 'HighTask':
+        player_info['TaskPotential_BaseModifier'] = TaskPotential_HighModifier
+    else:
+        player_info['TaskPotential_BaseModifier'] = TaskPotential_LowModifier
