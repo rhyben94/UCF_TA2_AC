@@ -210,23 +210,58 @@ class PlayerState:
         player_dynamic.init_from_player_profile(self.players[pid], player_profile)
 
     def handle_event_triage(self, dat, exp_id, trial_id):
-        pprint(f'handle event triage {trial_id}')
+        # print(f'handle event triage {trial_id}')
+        pid = dat['participant_id']
+        if pid not in self.players:
+            print(f'Error: handle_player_profile got {pid} but not found in players')
+            pprint(dat)
+            return
+        player_dynamic.handle_triage_event(self.players[pid], pid, dat)
 
     def handle_rubble_destroyed(self, dat, exp_id, trial_id):
-        pprint(f'handle rubble destroyed {trial_id}')
+        # print(f'handle rubble destroyed {trial_id}')
+        pid = dat['participant_id']
+        if pid not in self.players:
+            print(f'Error: handle_rubble_destroyed got {pid} but not found in players')
+            pprint(dat)
+            return
+        player_dynamic.handle_rubble_destroyed(self.players[pid], pid)
 
     def handle_victim_evacuated(self, dat, exp_id, trial_id):
-        pprint(f'handle victim evacuated {trial_id}')
+        # print(f'handle victim evacuated {trial_id}')
+        pid = dat['participant_id']
+        if pid not in self.players:
+            print(f'Error: handle_victim_evacuated got {pid} but not found in players')
+            pprint(dat)
+            return
+        player_dynamic.handle_victim_evacuated(self.players[pid], pid, dat)
 
     def handle_victim_picked_up(self, dat, exp_id, trial_id):
-        pprint(f'handle victim picked up {trial_id}')
+        # print(f'handle victim picked up {trial_id}')
+        pid = dat['participant_id']
+        if pid not in self.players:
+            print(f'Error: handle_victim_picked_up got {pid} but not found in players')
+            pprint(dat)
+            return
+        player_dynamic.handle_victim_picked_up(self.players[pid], pid, dat)
 
     def handle_victim_placed(self, dat, exp_id, trial_id):
-        pprint(f'handle victim placed {trial_id}')
+        # print(f'handle victim placed {trial_id}')
+        pid = dat['participant_id']
+        if pid not in self.players:
+            print(f'Error: handle_victim_placed got {pid} but not found in players')
+            pprint(dat)
+            return
+        player_dynamic.handle_victim_placed(self.players[pid], pid, dat)
 
     def handle_obs_state(self, dat, exp_id, trial_id):
         # pprint(f'handle observation state {trial_id}')
-        pass
+        pid = dat['participant_id']
+        if pid not in self.players:
+            print(f'Error: handle_obs_state got {pid} but not found in players')
+            pprint(dat)
+            return
+        player_dynamic.handle_obs_state(self.players[pid], pid, dat)
 
     def compute_player_profile(self, participant_id):
         converted = self.convert_quid_to_internal(participant_id)
@@ -288,6 +323,11 @@ class PlayerState:
                 qval = self.players[participant_id]['qid'][qid]
                 converted[k][k1] = qval
         return converted
+
+
+    def print_player_state(self):
+        for p in self.players.items():
+            pprint(p)
 
 
 playerstate = PlayerState()

@@ -1,5 +1,5 @@
 # Ref https://docs.google.com/presentation/d/1Z1QMkGs2D6fZSxsZO9CM2bFzGYzZaVbjTieoUenhQho/edit#slide=id.g117addec6ce_0_45
-
+import math
 from pprint import pprint
 
 role_lookup = {'Red': 'medic',
@@ -100,3 +100,120 @@ def init_from_player_profile(player_info, player_profile):
         player_info['TaskPotential_BaseModifier'] = TaskPotential_HighModifier
     else:
         player_info['TaskPotential_BaseModifier'] = TaskPotential_LowModifier
+
+
+def handle_triage_event(player_info, pid, triage):
+    role = player_info['role']
+    callsign = player_info['callsign']
+    tstate = triage['triage_state']
+    by_medic = False
+    if role != 'medic':
+        print(f'Warn: Triage pid: {pid} {callsign} {role} {tstate} by medic? {by_medic}')
+    if role == 'medic' and tstate == 'SUCCESSFUL':
+        if 'Medic_TriageSuccessful_Count_CurrentWindow' not in player_info:
+            player_info['Medic_TriageSuccessful_Count_CurrentWindow'] = 0
+        if 'Medic_TriageSuccessful_Count_Total' not in player_info:
+            player_info['Medic_TriageSuccessful_Count_Total'] = 0
+
+        player_info['Medic_TriageSuccessful_Count_CurrentWindow'] += 1
+        player_info['Medic_TriageSuccessful_Count_Total'] += 1
+
+
+def handle_rubble_destroyed(player_info, pid):
+    role = player_info['role']
+    callsign = player_info['callsign']
+    by_engg = False
+    if role != 'engineer':
+        print(f'Warn: Rubble destroyed pid: {pid} {callsign} {role} by engineer? {by_engg}')
+    else:
+        if 'Engineer_RubbleDestroyed_Count_CurrentWindow' not in player_info:
+            player_info['Engineer_RubbleDestroyed_Count_CurrentWindow'] = 0
+        if 'Engineer_RubbleDestroyed_Count_Total' not in player_info:
+            player_info['Engineer_RubbleDestroyed_Count_Total'] = 0
+
+        player_info['Engineer_RubbleDestroyed_Count_CurrentWindow'] += 1
+        player_info['Engineer_RubbleDestroyed_Count_Total'] += 1
+
+
+def handle_victim_evacuated(player_info, pid, dat):
+    role = player_info['role']
+    callsign = player_info['callsign']
+    by_transporter = False
+    victim_type = dat['type']
+    if role != 'transporter':
+        print(
+            f'Check: Victim evacuated pid: {pid} {callsign} {role} victim_type {victim_type} by transporter? {by_transporter}')
+    else:
+        if 'Transporter_Evacuations_Count_CurrentWindow' not in player_info:
+            player_info['Transporter_Evacuations_Count_CurrentWindow'] = 0
+        if 'Transporter_Evacuations_Count_Total' not in player_info:
+            player_info['Transporter_Evacuations_Count_Total'] = 0
+
+        if 'Transporter_Evacuations_Critical_Count_CurrentWindow' not in player_info:
+            player_info['Transporter_Evacuations_Critical_Count_CurrentWindow'] = 0
+        if 'Transporter_Evacuations_Critical_Count_Total' not in player_info:
+            player_info['Transporter_Evacuations_Critical_Count_Total'] = 0
+
+        if 'Transporter_Evacuations_Regular_Count_CurrentWindow' not in player_info:
+            player_info['Transporter_Evacuations_Regular_Count_CurrentWindow'] = 0
+        if 'Transporter_Evacuations_Regular_Count_Total' not in player_info:
+            player_info['Transporter_Evacuations_Regular_Count_Total'] = 0
+
+        player_info['Transporter_Evacuations_Count_CurrentWindow'] += 1
+        player_info['Transporter_Evacuations_Count_Total'] += 1
+
+        if victim_type == 'victim_saved_c':
+            player_info['Transporter_Evacuations_Critical_Count_CurrentWindow'] += 1
+            player_info['Transporter_Evacuations_Critical_Count_Total'] += 1
+        else:
+            player_info['Transporter_Evacuations_Regular_Count_CurrentWindow'] += 1
+            player_info['Transporter_Evacuations_Regular_Count_Total'] += 1
+
+
+def handle_victim_picked_up(player_info, pid, dat):
+    if 'Transports_Initiated_Count_CurrentWindow' not in player_info:
+        player_info['Transports_Initiated_Count_CurrentWindow'] = 0
+    if 'Transports_Initiated_Count_Total' not in player_info:
+        player_info['Transports_Initiated_Count_Total'] = 0
+
+    player_info['IsTransporting'] = True
+    player_info['Transports_Initiated_Count_CurrentWindow'] += 1
+    player_info['Transports_Initiated_Count_Total'] += 1
+    player_info['Transport_Current_VictimID'] = dat['victim_id']
+    player_info['Transport_Current_PickupLocation'] = [dat['victim_x'], dat['victim_z']]
+
+
+def handle_victim_placed(player_info, pid, dat):
+    if 'Transports_Completed_Count_CurrentWindow' not in player_info:
+        player_info['Transports_Completed_Count_CurrentWindow'] = 0
+    if 'Transports_Completed_Count_Total' not in player_info:
+        player_info['Transports_Completed_Count_Total'] = 0
+    if 'Transport_Distances_CurrentWindow_List' not in player_info:
+        player_info['Transport_Distances_CurrentWindow_List'] = []
+
+    player_info['IsTransporting'] = False
+    player_info['Transports_Completed_Count_CurrentWindow'] += 1
+    player_info['Transports_Completed_Count_Total'] += 1
+    player_info['Transport_Current_VictimID'] = []
+    player_info['Transport_Current_DropoffLocation'] = [dat['victim_x'], dat['victim_z']]
+
+    player_info['Transport_Distances_CurrentWindow_List'].append(player_info['Transport_Current_DistanceTranslated'])
+    player_info['Transport_Current_DistanceTranslated'] = 0
+
+
+def handle_obs_state(player_info, pid, dat):
+    if 'Motion_CurrentWindow' not in player_info:
+        player_info['Motion_CurrentWindow'] = 0
+    if 'Transport_Current_DistanceTranslated' not in player_info:
+        player_info['Transport_Current_DistanceTranslated'] = 0
+    if 'IsTransporting' not in player_info:
+        player_info['IsTransporting'] = False
+
+    mx = dat['motion_x']
+    mz = dat['motion_z']
+    player_info['Motion_CurrentWindow'] = player_info['Motion_CurrentWindow'] + \
+                                          math.sqrt(math.pow(mx, 2) + math.pow(mz, 2))
+
+    if player_info['IsTransporting']:
+        player_info['Transport_Current_DistanceTranslated'] = player_info['Transport_Current_DistanceTranslated'] + \
+                                                              math.sqrt(math.pow(mx, 2) + math.pow(mz, 2))

@@ -55,6 +55,7 @@ def process_metadata_file(fname):
 
         if message_type == 'observation' and sub_type == 'state':
             PlayerModel.playerstate.handle_obs_state(dat, exp_id, trial_id)
+    PlayerModel.playerstate.print_player_state()
 
 
 def main(pth):
