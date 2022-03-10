@@ -6,7 +6,7 @@ Player_role = "Medic"
 
 SBSOD_MedianCutoff = 4.933
 VGEM_MinecraftUSAR_MedianCutoff = 77.93
-Competency_MedianCutoff = 90
+Competency_MedianCutoff = 90000
 PsychologicalCollectivism_MedianCutoff = 59
 RMET_MedianCutoff = 27
 SociableDominance_MedianCutoff = 46
@@ -16,9 +16,11 @@ TeamPotential_MustBeHighIn = 1
 
 ## Assign measure response values to script variables. The competency test completion times may need to be pulled in separately depending on when that message gets published
 
-Competency_Score = 200
-##print("Competency_Score: ")
-##print(Competency_Score)
+Competency_Score = 100000
+##Competency_Score = Competency Test End Time - Competency Test Start Time 
+## Example: for Blue Competency_Score = (observations/events/competency/task "Blue Competency: End" "elapsed_milliseconds":509270 ) - (observations/events/competency/task "Blue Competency: Start","elapsed_milliseconds":429740) = 509270 - 429740 = 79530
+
+
 ## Credit note: thank you to the Gallup team for providing the question to message mappings!
 
 ##{"ImportId":"QID13_1"}
