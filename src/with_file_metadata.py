@@ -11,6 +11,7 @@ import argparse
 from pathlib import Path
 import metadata_utils
 import PlayerModel
+from pprint import pprint
 
 
 def process_metadata_file(fname):
@@ -23,11 +24,37 @@ def process_metadata_file(fname):
         dat = m['data']
         exp_id = msg['experiment_id']
         trial_id = msg['trial_id']
-        if msg['sub_type'] == 'Status:SurveyResponse':
-            PlayerModel.playerstate.handle_survey_values(dat['values'],
-                                                         exp_id, trial_id)
-        if header['message_type'] == 'trial' and msg['sub_type'] == 'start':
+        message_type = header['message_type']
+        sub_type = msg['sub_type']
+
+        if sub_type == 'Status:SurveyResponse':
+            vals = PlayerModel.playerstate.handle_survey_values(dat['values'],
+                                                                exp_id, trial_id)
+            # pprint(vals)
+            pp = vals['player_profile']
+            if pp:
+                PlayerModel.playerstate.handle_player_profile(pp)
+
+        if message_type == 'trial' and sub_type == 'start':
             PlayerModel.playerstate.handle_trial_start(dat['client_info'], exp_id, trial_id)
+
+        if sub_type == 'Event:Triage':
+            PlayerModel.playerstate.handle_event_triage(dat, exp_id, trial_id)
+
+        if sub_type == 'Event:RubbleDestroyed':
+            PlayerModel.playerstate.handle_rubble_destroyed(dat, exp_id, trial_id)
+
+        if sub_type == 'Event:VictimEvacuated':
+            PlayerModel.playerstate.handle_victim_evacuated(dat, exp_id, trial_id)
+
+        if sub_type == 'Event:VictimPickedUp':
+            PlayerModel.playerstate.handle_victim_picked_up(dat, exp_id, trial_id)
+
+        if sub_type == 'Event:VictimPlaced':
+            PlayerModel.playerstate.handle_victim_placed(dat, exp_id, trial_id)
+
+        if message_type == 'observation' and sub_type == 'state':
+            PlayerModel.playerstate.handle_obs_state(dat, exp_id, trial_id)
 
 
 def main(pth):

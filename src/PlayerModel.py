@@ -4,6 +4,7 @@
 
 from pprint import pprint
 import PlayerProfiler_Draft as player_profiler
+import PlayerModelDynamic  as player_dynamic
 
 # player = {'sbsod': [f'SBSOD_{x}' for x in range(1, 16)]}
 # vgem = {f'VGEM_{x}': 'QID8_' for x in range(1, 16)}
@@ -146,7 +147,12 @@ class PlayerState:
         for ci in client_info:
             participant_id = ci['participant_id']
             callsign = ci['callsign']
-            print('Got ', participant_id, callsign)
+            role = None
+            if callsign not in player_dynamic.role_lookup:
+                print('Warn: We don\'t have role for call sign', callsign)
+            else:
+                role = player_dynamic.role_lookup[callsign]
+            print(f'Got {participant_id}: {callsign} => {role}')
             if participant_id not in self.players:
                 self.players[participant_id] = self.make_new_player(exp_id, trial_id)
             if trial_id not in self.players[participant_id]['trials']:
@@ -156,6 +162,11 @@ class PlayerState:
                 if old != callsign:
                     print(f'Player {participant_id} call sign changed: {old} -> {callsign}')
             self.players[participant_id]['callsign'] = callsign
+            if 'role' in self.players[participant_id]:
+                old = self.players['participant_id']['role']
+                if old != role:
+                    print(f'Player {participant_id} role changed: {old} -> {role}')
+            self.players[participant_id]['role'] = role
 
     def make_new_player(self, exp_id, trial_id):
         return {'experiment_id': exp_id,
@@ -166,9 +177,13 @@ class PlayerState:
         participant_id = vals['participantid']
         print('\nfor participant', participant_id)
         if participant_id not in self.players:
+            print('Error: handle_survey_values participant_id not found:', participant_id)
+            pprint(vals)
             self.players[participant_id] = self.make_new_player(exp_id, trial_id)
 
         if trial_id not in self.players[participant_id]['trials']:
+            print('Error: handle_survey_values trial_id not found:', trial_id)
+            pprint(vals)
             self.players[participant_id]['trials'].append(trial_id)
 
         collected = self.collect_qid_vals(participant_id, vals)
@@ -184,6 +199,34 @@ class PlayerState:
         #     print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
         # print()
         return {'collected': collected, 'have_all': have_all, 'player_profile': player_profile}
+
+    def handle_player_profile(self, player_profile):
+        # pprint(player_profile)
+        pid = player_profile['participant_id']
+        if pid not in self.players:
+            print(f'Error: handle_player_profile got {pid} but not found in players')
+            pprint(player_profile)
+            return
+        player_dynamic.init_from_player_profile(self.players[pid], player_profile)
+
+    def handle_event_triage(self, dat, exp_id, trial_id):
+        pprint(f'handle event triage {trial_id}')
+
+    def handle_rubble_destroyed(self, dat, exp_id, trial_id):
+        pprint(f'handle rubble destroyed {trial_id}')
+
+    def handle_victim_evacuated(self, dat, exp_id, trial_id):
+        pprint(f'handle victim evacuated {trial_id}')
+
+    def handle_victim_picked_up(self, dat, exp_id, trial_id):
+        pprint(f'handle victim picked up {trial_id}')
+
+    def handle_victim_placed(self, dat, exp_id, trial_id):
+        pprint(f'handle victim placed {trial_id}')
+
+    def handle_obs_state(self, dat, exp_id, trial_id):
+        # pprint(f'handle observation state {trial_id}')
+        pass
 
     def compute_player_profile(self, participant_id):
         converted = self.convert_quid_to_internal(participant_id)
@@ -202,9 +245,11 @@ class PlayerState:
                                                                 rmet_score, social_dominance_score)
         player_profile['participant_id'] = participant_id
         player_profile['callsign'] = 'not_available'
+        player_profile['role'] = 'not_available'
         if 'callsign' in self.players[participant_id]:
             player_profile['callsign'] = self.players[participant_id]['callsign']
-
+        if 'role' in self.players[participant_id]:
+            player_profile['role'] = self.players[participant_id]['role']
         return player_profile
 
     def collect_qid_vals(self, participant_id, vals):
