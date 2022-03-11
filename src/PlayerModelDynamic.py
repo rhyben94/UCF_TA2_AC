@@ -95,7 +95,7 @@ def init_from_player_profile(player_info, player_profile):
 
     # Step 1
     player_info['TaskPotential_Start'] = player_profile['task-potential-category']
-
+    player_profile['TeamPotential_Category'] = player_profile['team-potential-category']
     # Step 2
     if player_info['TaskPotential_Start'] == 'HighTask':
         player_info['TaskPotential_BaseModifier'] = TaskPotential_HighModifier
