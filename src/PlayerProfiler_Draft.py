@@ -804,56 +804,45 @@ def compute_player_profile(sbsod_score, vgem_score,
         SBSOD_MedianSplit_Score = 1
     else:
         SBSOD_MedianSplit_Score = 0
-    print("SBSOD_MedianSplit_Score: ")
-    print(SBSOD_MedianSplit_Score)
-
+    print("SBSOD_MedianSplit_Score: ", SBSOD_MedianSplit_Score)
 
     if vgem_score > VGEM_MinecraftUSAR_MedianCutoff:
         VGEM_MinecraftUSAR_MedianSplit_Score = 1
     else:
         VGEM_MinecraftUSAR_MedianSplit_Score = 0
-    print("VGEM_MinecraftUSAR_MedianSplit_Score: ")
-    print(VGEM_MinecraftUSAR_MedianSplit_Score)
-
+    print("VGEM_MinecraftUSAR_MedianSplit_Score: ", VGEM_MinecraftUSAR_MedianSplit_Score)
 
     if Competency_Score > Competency_MedianCutoff:
         Competency_MedianSplit_Score = 1
     else:
         Competency_MedianSplit_Score = 0
-    print("Competency_MedianSplit_Score: ")
-    print(Competency_MedianSplit_Score)
-
+    print("Competency_MedianSplit_Score: ", Competency_MedianSplit_Score)
 
     if psychological_collectivism_score > PsychologicalCollectivism_MedianCutoff:
         PsychologicalCollectivism_MedianSplit_Score = 1
     else:
         PsychologicalCollectivism_MedianSplit_Score = 0
-    print("PsychologicalCollectivism_MedianSplit_Score: ")
-    print(PsychologicalCollectivism_MedianSplit_Score)
-
+    print("PsychologicalCollectivism_MedianSplit_Score: ", PsychologicalCollectivism_MedianSplit_Score)
 
     if rmet_score > RMET_MedianCutoff:
         RMET_MedianSplit_Score = 1
     else:
         RMET_MedianSplit_Score = 0
-    print("RMET_MedianSplit_Score: ")
-    print(RMET_MedianSplit_Score)
-
+    print("RMET_MedianSplit_Score: ", RMET_MedianSplit_Score)
 
     if sociableDominance_score > SociableDominance_MedianCutoff:
         SociableDominance_MedianSplit_Score = 1
     else:
         SociableDominance_MedianSplit_Score = 0
-    print("SociableDominance_MedianSplit_Score: ")
-    print(SociableDominance_MedianSplit_Score)
-
+    print("SociableDominance_MedianSplit_Score: ", SociableDominance_MedianSplit_Score)
 
     ## Measure median cutoff categorizations
 
-    TaskPotential_Score = sum([SBSOD_MedianSplit_Score, VGEM_MinecraftUSAR_MedianSplit_Score, Competency_MedianSplit_Score])
+    TaskPotential_Score = sum(
+        [SBSOD_MedianSplit_Score, VGEM_MinecraftUSAR_MedianSplit_Score, Competency_MedianSplit_Score])
 
-    TeamPotential_Score = sum([PsychologicalCollectivism_MedianSplit_Score, RMET_MedianSplit_Score, SociableDominance_MedianSplit_Score])
-
+    TeamPotential_Score = sum(
+        [PsychologicalCollectivism_MedianSplit_Score, RMET_MedianSplit_Score, SociableDominance_MedianSplit_Score])
 
     if TaskPotential_Score > TaskPotential_MustBeHighIn:
         TaskPotential_Category = 'HighTask'
