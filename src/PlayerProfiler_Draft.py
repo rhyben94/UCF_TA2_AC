@@ -783,23 +783,16 @@ def get_rmet_score(qids):
     return RMET_Score
 
 def make_player_profile(TaskPotential_Category, TeamPotential_Category):
-    if TaskPotential_Category != 'HighTask' or TaskPotential_Category != 'LowTask':
+    print(f'make_player_profile {TaskPotential_Category}{TeamPotential_Category}', len(TaskPotential_Category), len(TeamPotential_Category))
+
+    if TaskPotential_Category != 'HighTask' and TaskPotential_Category != 'LowTask':
         print('make_player_profile: bad TaskPotential_Category', TaskPotential_Category)
         return None
 
-    if TeamPotential_Category != 'HighTeam' or TaskPotential_Category != 'LowTeam':
+    if TeamPotential_Category != 'HighTeam' and TeamPotential_Category != 'LowTeam':
         print('make_player_profile: bad TeamPotential_Category', TeamPotential_Category)
         return None
-
-    if TaskPotential_Category == "HighTask" and TeamPotential_Category == "HighTeam":
-        PlayerProfile = "HighTaskHighTeam"
-    if TaskPotential_Category == "HighTask" and TeamPotential_Category == "LowTeam":
-        PlayerProfile = "HighTaskLowTeam"
-    if TaskPotential_Category == "LowTask" and TeamPotential_Category == "HighTeam":
-        PlayerProfile = "LowTaskHighTeam"
-    if TaskPotential_Category == "LowTask" and TeamPotential_Category == "LowTeam":
-        PlayerProfile = "LowTaskLowTeam"
-    return PlayerProfile
+    return f'{TaskPotential_Category}{TeamPotential_Category}'
 
 ## Measure median cutoff categorizations
 ## Note I’ve been using 0 = Low and 1 = High, but could go back to string values if that makes things easier
