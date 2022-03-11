@@ -782,6 +782,25 @@ def get_rmet_score(qids):
         RMET_Score += 1
     return RMET_Score
 
+def make_player_profile(TaskPotential_Category, TeamPotential_Category):
+    if TaskPotential_Category != 'HighTask' or TaskPotential_Category != 'LowTask':
+        print('make_player_profile: bad TaskPotential_Category', TaskPotential_Category)
+        return None
+
+    if TeamPotential_Category != 'HighTeam' or TaskPotential_Category != 'LowTeam':
+        print('make_player_profile: bad TeamPotential_Category', TeamPotential_Category)
+        return None
+
+    if TaskPotential_Category == "HighTask" and TeamPotential_Category == "HighTeam":
+        PlayerProfile = "HighTaskHighTeam"
+    if TaskPotential_Category == "HighTask" and TeamPotential_Category == "LowTeam":
+        PlayerProfile = "HighTaskLowTeam"
+    if TaskPotential_Category == "LowTask" and TeamPotential_Category == "HighTeam":
+        PlayerProfile = "LowTaskHighTeam"
+    if TaskPotential_Category == "LowTask" and TeamPotential_Category == "LowTeam":
+        PlayerProfile = "LowTaskLowTeam"
+    return PlayerProfile
+
 ## Measure median cutoff categorizations
 ## Note I’ve been using 0 = Low and 1 = High, but could go back to string values if that makes things easier
 
@@ -855,15 +874,7 @@ def compute_player_profile(sbsod_score, vgem_score,
 
     ## Profile Outcome
 
-    PlayerProfile = None
-    if TaskPotential_Category == "HighTask" and TeamPotential_Category == "HighTeam":
-        PlayerProfile = "HighTaskHighTeam"
-    if TaskPotential_Category == "HighTask" and TeamPotential_Category == "LowTeam":
-        PlayerProfile = "HighTaskLowTeam"
-    if TaskPotential_Category == "LowTask" and TeamPotential_Score == "HighTeam":
-        PlayerProfile = "LowTaskHighTeam"
-    if TaskPotential_Category == "LowTask" and TeamPotential_Category == "LowTeam":
-        PlayerProfile = "LowTaskLowTeam"
+    PlayerProfile = make_player_profile(TaskPotential_Category, TeamPotential_Category)
 
     print("Player Profile: ")
     print(PlayerProfile)
