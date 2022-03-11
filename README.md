@@ -10,6 +10,18 @@ Purpose: Player Profiles on ‘potential’ in teamwork and in taskwork used to 
    * Install dependencies as `pip3 install --user -r requirements.txt`
 
 ## Inputs/Messages for subscription:
+- Player Profile 
+  - (https://gitlab.asist.aptima.com/asist/testbed/-/blob/develop/MessageSpecs/PlayerProfiler/player_profile_message.md)
+- State 
+  - (https://gitlab.asist.aptima.com/asist/testbed/-/blob/develop/MessageSpecs/PlayerState/observation_state.md)
+- Triage 
+  - (https://gitlab.asist.aptima.com/asist/testbed/-/blob/develop/MessageSpecs/Triage/triage_event_message.md)
+- victim_picked_up 
+  - (https://gitlab.asist.aptima.com/asist/testbed/-/blob/develop/MessageSpecs/VictimPickedUp/victim_picked_up_event_message.md) 
+- victim_placed 
+  - (https://gitlab.asist.aptima.com/asist/testbed/-/blob/develop/MessageSpecs/VictimPlaced/victim_placed_event_message.md)
+- rubble_destroyed 
+  - (https://gitlab.asist.aptima.com/asist/testbed/-/blob/develop/MessageSpecs/RubbleDestroyed/rubble_destroyed_event_message.md)
 - Survey items
   - SBSOD_1 = {"ImportId":"QID13_1"}
   - SBSOD_2 = {"ImportId":"QID13_2"}
@@ -109,8 +121,15 @@ Purpose: Player Profiles on ‘potential’ in teamwork and in taskwork used to 
   - RMET_36 = {"ImportId":"QID821"}
 
 
+
+
 ## Outputs:
+Static Profile
 - [Participant_Id, PlayerRole, TaskPotential_Category, TeamPotential_Category, PlayerProfile]
+
+Dynamic Profile
+- [Participant_Id, PlayerRole, TaskPotential_Category, TaskPotential_Changed, TaskPotential_StateAverage, TaskPotential_StateAveragesList, TaskPotential_Factors_List]
+
 
 #### Bus message format
 ### TOPIC
@@ -151,7 +170,11 @@ For callsign and participant_id, see [client_info.md](../Trial/client_info.md)
 
 ## Frequency of Measurement
 
-Player profile messages will be published in response to updates to any data used by the player profiles. For example, when survey responses are published on the message bus, or when the competency test data is published on the bus. 
+Prior to mission execution:
+Static Player Profiler messages will be published in response to updates to any data used by the player profiles. The two anticipated events are when survey responses are published on the message bus and when the competency test data is published on the bus. 
+
+During mission execution:
+Static and Dynamic Player Profile messages will be published every 180 seconds from mission start. 
 
 ## Generating Assessments and Potential Applications
 
