@@ -1,10 +1,11 @@
 # Copyright 2022 Dynamic Object Language Labs Inc.
 # DISTRIBUTION STATEMENT C: U.S. Government agencies and their contractors.
 # Other requests shall be referred to DARPA’s Public Release Center via email at prc@darpa.mil.
-
+import sys
 from pprint import pprint
 import PlayerProfiler_Draft as player_profiler
 import PlayerModelDynamic  as player_dynamic
+import csv
 
 # player = {'sbsod': [f'SBSOD_{x}' for x in range(1, 16)]}
 # vgem = {f'VGEM_{x}': 'QID8_' for x in range(1, 16)}
@@ -127,9 +128,125 @@ player = {'sbsod':
                    'RMET_36': 'QID821'
                    }}
 
-factor_windows = 180*1000 # every 180 seconds since the mission start,  we fire "end of 180 second loop" event
+
+#
+def qid_defaults_from_csv(csv_f='player-profile-qid-defaults.csv'):
+    qid_defaults = {}
+    with open(csv_f) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            pprint(row)
+            qid = row['QID']
+            val = float(row['Default Value'])
+            qid_defaults[qid] = val
+
+    pprint(qid_defaults)
+    return qid_defaults
+
+
+# qid_defaults_from_csv()
+# qid_defaults created using qid_defaults_from_csv)_
+qid_defaults = {'QID13_1': 5.502857143,
+                'QID13_10': 3.508571429,
+                'QID13_11': 3.281609195,
+                'QID13_12': 2.350574713,
+                'QID13_13': 3.482758621,
+                'QID13_14': 4.457142857,
+                'QID13_15': 2.754285714,
+                'QID13_2': 3.44,
+                'QID13_3': 5.098837209,
+                'QID13_4': 5.402298851,
+                'QID13_5': 4.165714286,
+                'QID13_6': 3.782857143,
+                'QID13_7': 4.908571429,
+                'QID13_8': 2.534482759,
+                'QID13_9': 5.218390805,
+                'QID751': 3.0,
+                'QID753': 2.0,
+                'QID755': 3.0,
+                'QID757': 2.0,
+                'QID759': 2.0,
+                'QID761': 2.0,
+                'QID763': 2.0,
+                'QID765': 1.0,
+                'QID767': 4.0,
+                'QID769': 1.0,
+                'QID771': 2.0,
+                'QID773': 3.0,
+                'QID775': 2.0,
+                'QID777': 1.0,
+                'QID779': 1.0,
+                'QID781': 2.0,
+                'QID783': 2.0,
+                'QID785': 1.0,
+                'QID787': 2.0,
+                'QID789': 2.0,
+                'QID791': 2.0,
+                'QID793': 1.0,
+                'QID795': 4.0,
+                'QID797': 1.0,
+                'QID799': 4.0,
+                'QID801': 3.0,
+                'QID803': 2.0,
+                'QID805': 1.0,
+                'QID807': 1.0,
+                'QID809': 2.0,
+                'QID811': 2.0,
+                'QID813': 1.0,
+                'QID815': 4.0,
+                'QID817': 3.0,
+                'QID819': 2.0,
+                'QID821': 3.0,
+                'QID830_1': 3.508571429,
+                'QID830_10': 4.017142857,
+                'QID830_11': 4.354285714,
+                'QID830_12': 4.494252874,
+                'QID830_13': 3.542857143,
+                'QID830_14': 3.634285714,
+                'QID830_15': 3.417142857,
+                'QID830_2': 3.622857143,
+                'QID830_3': 3.451428571,
+                'QID830_4': 3.497142857,
+                'QID830_5': 3.551724138,
+                'QID830_6': 3.88,
+                'QID830_7': 4.28,
+                'QID830_8': 4.274285714,
+                'QID830_9': 4.195402299,
+                'QID832_16': 3.417142857,
+                'QID832_17': 3.534482759,
+                'QID832_18': 3.811428571,
+                'QID832_19': 3.337142857,
+                'QID832_20': 3.24,
+                'QID832_21': 3.925714286,
+                'QID832_22': 3.683908046,
+                'QID832_23': 3.068965517,
+                'QID832_24': 3.108571429,
+                'QID832_25': 2.645714286,
+                'QID832_26': 1.885714286,
+                'QID832_27': 1.6,
+                'QID832_28': 2.794285714,
+                'QID832_29': 1.874285714,
+                'QID832_9': 3.925714286,
+                'QID867_1': 14.09,
+                'QID867_2': 11.58,
+                'QID867_4': 8.08,
+                'QID868_1': 7.0,
+                'QID868_3': 7.0,
+                'QID868_5': 7.0,
+                'QID868_6': 6.0,
+                'QID872_1': 74.29714286,
+                'QID872_2': 70.40571429,
+                'QID872_3': 76.94285714,
+                'QID872_4': 80.41714286,
+                'QID872_5': 79.94857143,
+                'QID872_6': 77.48,
+                'QID872_7': 92.85142857,
+                'QID872_8': 80.44571429}
+
+factor_windows = 180 * 1000  # every 180 seconds since the mission start,  we fire "end of 180 second loop" event
 
 print('factor_windows = ', factor_windows)
+
 
 def get_required_qids():
     qid_set = set()
@@ -150,8 +267,9 @@ class PlayerState:
     def check_180_timeout(self):
         current_factor_window = (int)(self.elapsed_time / factor_windows)
         if current_factor_window != self.last_factor_window:
-            if current_factor_window > 0:
-                print(f'Handle 180 second timeout {self.last_factor_window} => {current_factor_window}')
+            if -1 < current_factor_window <= player_dynamic.max_index_180_timeout:
+                print(
+                    f'Handle 180 second timeout {self.last_factor_window} => {current_factor_window} @time {self.elapsed_time}')
                 player_dynamic.handle_180_sec_timeout(self.players.values(), current_factor_window)
             self.last_factor_window = current_factor_window
 
@@ -170,6 +288,7 @@ class PlayerState:
         return False
 
     def handle_trial_start(self, client_info, exp_id, trial_id):
+        print('Trial Start client info')
         pprint(client_info)
         for ci in client_info:
             participant_id = ci['participant_id']
@@ -198,11 +317,36 @@ class PlayerState:
     def make_new_player(self, exp_id, trial_id):
         return {'experiment_id': exp_id,
                 'trials': [trial_id],
-                'qid': {}}
+                'qid': {},
+                'Motion_CurrentWindow': 0,
+                'Transport_Current_DistanceTranslated': 0,
+                'IsTransporting': False,
+                'Medic_TriageSuccessful_Count_CurrentWindow': 0,
+                'Medic_TriageSuccessful_Count_Total': 0,
+
+                'Engineer_RubbleDestroyed_Count_CurrentWindow': 0,
+                'Engineer_RubbleDestroyed_Count_Total': 0,
+
+                'Transporter_Evacuations_Count_CurrentWindow': 0,
+                'Transporter_Evacuations_Count_Total': 0,
+                'Transporter_Evacuations_Critical_Count_CurrentWindow': 0,
+                'Transporter_Evacuations_Critical_Count_Total': 0,
+                'Transporter_Evacuations_Regular_Count_CurrentWindow': 0,
+                'Transporter_Evacuations_Regular_Count_Total': 0,
+
+                'Transports_Initiated_Count_CurrentWindow': 0,
+                'Transports_Initiated_Count_Total': 0,
+                'Transports_Completed_Count_CurrentWindow': 0,
+                'Transports_Completed_Count_Total': 0,
+                'Transport_Distances_CurrentWindow_List': [],
+                'TaskPotential_StateAverages_List': [],
+                'TaskPotential_Categorization_LastWindow': None,
+                'TaskPotential_StateAverage_LastWindow': 0
+                }
 
     def handle_survey_values(self, vals, exp_id, trial_id):
         participant_id = vals['participantid']
-        print('\nfor participant', participant_id)
+        print('\nsurvey for participant', participant_id)
         if participant_id not in self.players:
             print('Error: handle_survey_values participant_id not found:', participant_id)
             pprint(vals)
@@ -213,19 +357,39 @@ class PlayerState:
             pprint(vals)
             self.players[participant_id]['trials'].append(trial_id)
 
-        collected = self.collect_qid_vals(participant_id, vals)
+        added_defaults = self.add_default_qid_vals(vals)
+        collected = self.collect_qid_vals(participant_id, added_defaults)
         have_all = self.have_all_qids(participant_id)
 
         player_profile = None
         if collected and have_all:
             print('Compute and publish player profile message')
             player_profile = self.compute_player_profile(participant_id)
-            print('Player Profile')
+            print('Publish Player Profile')
             pprint(player_profile)
         # else:
         #     print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
         # print()
         return {'collected': collected, 'have_all': have_all, 'player_profile': player_profile}
+
+    # for missing qid vals, we add defaults and return new map
+    def add_default_qid_vals(self, vals):
+        all_qid = {}
+        added = {}
+        for qid in self.req_qid_set:
+            if qid not in vals:
+                if qid in qid_defaults:
+                    all_qid[qid] = qid_defaults[qid]
+                    added[qid] = qid_defaults[qid]
+                else:
+                    print(f'Error: Required {qid} not found in vals and qid_defaults')
+            else:
+                all_qid[qid] = vals[qid]
+
+        if len(added) > 0:
+            print('Added missing qid vals from survey', len(added))
+            pprint(added)
+        return all_qid
 
     def handle_player_profile(self, player_profile):
         # pprint(player_profile)
@@ -315,6 +479,8 @@ class PlayerState:
         return player_profile
 
     def collect_qid_vals(self, participant_id, vals):
+        # print('collect qid vals')
+        # pprint(vals)
         collected = False
         for k, v in vals.items():
             if k.startswith('QID') and k in self.req_qid_set:
@@ -335,11 +501,11 @@ class PlayerState:
 
     def have_all_qids(self, participant_id):
         have = set().union(self.players[participant_id]['qid'].keys())
-        print('qid expected, have', participant_id, len(self.req_qid_set), len(have))
         needed = self.req_qid_set - have
-        print('Needed qid', needed)
         if 0 == len(needed):
             return True
+        print('qid expected, have', participant_id, len(self.req_qid_set), len(have))
+        print('Needed qid', needed)
         return False
 
     def convert_quid_to_internal(self, participant_id):
