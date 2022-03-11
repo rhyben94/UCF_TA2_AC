@@ -127,6 +127,9 @@ player = {'sbsod':
                    'RMET_36': 'QID821'
                    }}
 
+factor_windows = 180*1000 # every 180 seconds since the mission start,  we fire "end of 180 second loop" event
+
+print('factor_windows = ', factor_windows)
 
 def get_required_qids():
     qid_set = set()
@@ -140,7 +143,31 @@ class PlayerState:
     def __init__(self):
         self.players = {}
         self.req_qid_set = get_required_qids()
+        self.elapsed_time = -1  # -1 implies mission ended
+        self.last_factor_window = -1
         # print('QID set', len(self.req_qid_set))
+
+    def check_180_timeout(self):
+        current_factor_window = (int)(self.elapsed_time / factor_windows)
+        if current_factor_window != self.last_factor_window:
+            if current_factor_window > 0:
+                print(f'Handle 180 second timeout {self.last_factor_window} => {current_factor_window}')
+                player_dynamic.handle_180_sec_timeout(self.players.values(), current_factor_window)
+            self.last_factor_window = current_factor_window
+
+    def update_elapsed(self, elapsed_ms):
+        if elapsed_ms == -1:
+            self.elapsed_time
+            return True
+        if elapsed_ms > self.elapsed_time:
+            self.elapsed_time = elapsed_ms
+            self.check_180_timeout()
+            return True
+        delta = elapsed_ms - self.elapsed_time
+        # for printing, tolerate delta of 30ms
+        if abs(delta) > 30:
+            print(f'Elapsed time not updated. prev {self.elapsed_time} => {elapsed_ms} {delta}')
+        return False
 
     def handle_trial_start(self, client_info, exp_id, trial_id):
         pprint(client_info)
@@ -324,10 +351,16 @@ class PlayerState:
                 converted[k][k1] = qval
         return converted
 
-
     def print_player_state(self):
         for p in self.players.items():
             pprint(p)
+
+    def handle_mission_state(self, msg):
+        # pprint(msg)
+        state = msg['data']['mission_state']
+        elapsed = msg['data']['elapsed_milliseconds']
+        print(f'Mission State {state} Elapsed ms {self.elapsed_time} => {elapsed}')
+        self.elapsed_time = elapsed  # -1 implies mission ended
 
 
 playerstate = PlayerState()

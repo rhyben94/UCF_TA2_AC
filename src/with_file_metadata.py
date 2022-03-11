@@ -27,6 +27,16 @@ def process_metadata_file(fname):
         message_type = header['message_type']
         sub_type = msg['sub_type']
 
+        if 'elapsed_milliseconds' in dat:
+            elapsed_ms = dat['elapsed_milliseconds']
+            ret = PlayerModel.playerstate.update_elapsed(elapsed_ms)
+            # if not ret:
+            #     pprint(f'Issue updating elapsed time.\nBad message {m}')
+
+        if message_type == 'trial' and sub_type == 'start':
+            # pprint(m)
+            PlayerModel.playerstate.handle_trial_start(dat['client_info'], exp_id, trial_id)
+
         if sub_type == 'Status:SurveyResponse':
             vals = PlayerModel.playerstate.handle_survey_values(dat['values'],
                                                                 exp_id, trial_id)
@@ -35,8 +45,8 @@ def process_metadata_file(fname):
             if pp:
                 PlayerModel.playerstate.handle_player_profile(pp)
 
-        if message_type == 'trial' and sub_type == 'start':
-            PlayerModel.playerstate.handle_trial_start(dat['client_info'], exp_id, trial_id)
+        if sub_type == 'Event:MissionState':
+            PlayerModel.playerstate.handle_mission_state(m)
 
         if sub_type == 'Event:Triage':
             PlayerModel.playerstate.handle_event_triage(dat, exp_id, trial_id)
@@ -55,7 +65,7 @@ def process_metadata_file(fname):
 
         if message_type == 'observation' and sub_type == 'state':
             PlayerModel.playerstate.handle_obs_state(dat, exp_id, trial_id)
-    PlayerModel.playerstate.print_player_state()
+    # PlayerModel.playerstate.print_player_state()
 
 
 def main(pth):

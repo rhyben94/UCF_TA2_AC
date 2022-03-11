@@ -1,6 +1,7 @@
 # Ref https://docs.google.com/presentation/d/1Z1QMkGs2D6fZSxsZO9CM2bFzGYzZaVbjTieoUenhQho/edit#slide=id.g117addec6ce_0_45
 import math
 from pprint import pprint
+from statistics import mean
 
 role_lookup = {'Red': 'medic',
                'Blue': 'engineer',
@@ -217,3 +218,66 @@ def handle_obs_state(player_info, pid, dat):
     if player_info['IsTransporting']:
         player_info['Transport_Current_DistanceTranslated'] = player_info['Transport_Current_DistanceTranslated'] + \
                                                               math.sqrt(math.pow(mx, 2) + math.pow(mz, 2))
+
+
+def update_medic_180(player_info, factor):
+    print('update medic 180', factor)
+    pprint(player_info)
+
+    Medic_TriageSuccessful_Count_CurrentWindow = player_info['Medic_TriageSuccessful_Count_CurrentWindow']
+    Transports_Completed_Count_CurrentWindow = player_info['Transports_Completed_Count_CurrentWindow']
+
+    player_info['Medic_TriageSuccessful_to_Movement_ratio_CurrentWindow'] = \
+        Medic_TriageSuccessful_Count_CurrentWindow / player_info['Motion_CurrentWindow']
+
+    player_info['Transport_Distance_Average_CurrentWindow'] = mean(
+        player_info['Transport_Distances_CurrentWindow_List'])
+
+    player_info['Medic_TriageSuccessful_to_Transports_ratio_CurrentWindow'] = \
+        Medic_TriageSuccessful_Count_CurrentWindow / Transports_Completed_Count_CurrentWindow
+
+
+def update_engg_180(player_info, factor):
+    print('update engg 180', factor)
+    pprint(player_info)
+
+    Motion_CurrentWindow = player_info['Motion_CurrentWindow']
+    Engineer_RubbleDestroyed_Count_CurrentWindow = player_info['Engineer_RubbleDestroyed_Count_CurrentWindow']
+    Transports_Completed_Count_CurrentWindow = player_info['Transports_Completed_Count_CurrentWindow']
+
+    Engineer_RubbleDestroyed_to_Movement_ratio_CurrentWindow = Engineer_RubbleDestroyed_Count_CurrentWindow / Motion_CurrentWindow
+    Engineer_RubbleDestroyed_to_Transports_ratio_CurrentWindow = Engineer_RubbleDestroyed_Count_CurrentWindow / Transports_Completed_Count_CurrentWindow
+
+    player_info[
+        'Engineer_RubbleDestroyed_to_Movement_ratio_CurrentWindow'] = Engineer_RubbleDestroyed_to_Movement_ratio_CurrentWindow
+    player_info['Transport_Distance_Average_CurrentWindow'] = mean(
+        player_info['Transport_Distances_CurrentWindow_List'])
+    player_info[
+        'Engineer_RubbleDestroyed_to_Transports_ratio_CurrentWindow'] = Engineer_RubbleDestroyed_to_Transports_ratio_CurrentWindow
+
+
+def update_transporter_180(player_info, factor):
+    print('update transporter 180', factor)
+    pprint(player_info)
+
+    player_info['Transporter_Transport_Distance_Average_CurrentWindow'] = mean(
+        player_info['Transport_Distances_CurrentWindow_List'])
+
+    Transports_Completed_Count_CurrentWindow = player_info['Transports_Completed_Count_CurrentWindow']
+    Transporter_Evacuations_Count_CurrentWindow = player_info['Transporter_Evacuations_Count_CurrentWindow']
+    Transporter_Transport_to_Evacuation_ratio_CurrentWindow = Transports_Completed_Count_CurrentWindow / Transporter_Evacuations_Count_CurrentWindow
+    player_info[
+        'Transporter_Transport_to_Evacuation_ratio_CurrentWindow'] = Transporter_Transport_to_Evacuation_ratio_CurrentWindow
+
+
+def handle_180_sec_timeout(player_infos, factor):
+    for pi in player_infos:
+        role = pi['role']
+        if role == 'medic':
+            update_medic_180(pi, factor)
+        elif role == 'engineer':
+            update_engg_180(pi, factor)
+        elif role == 'transporter':
+            update_transporter_180(pi, factor)
+        else:
+            print('Unknown role for player: ', role)
