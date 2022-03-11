@@ -858,8 +858,7 @@ def compute_player_profile(sbsod_score, vgem_score,
 
     PlayerProfile = make_player_profile(TaskPotential_Category, TeamPotential_Category)
 
-    print("Player Profile: ")
-    print(PlayerProfile)
+    print("Initial Static Player Profile: ", PlayerProfile)
     if not PlayerProfile:
         print('PlayerProfile is none')
         print('Task Potential Scores', TaskPotential_Score)
