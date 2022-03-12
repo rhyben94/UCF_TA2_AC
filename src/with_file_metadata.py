@@ -34,7 +34,7 @@ def process_metadata_file(fname):
             #     pprint(f'Issue updating elapsed time.\nBad message {m}')
             timed_out_180 = PlayerModel.playerstate.check_180_timeout()
             if timed_out_180:
-                print(f'Timedout 180 data {PlayerModel.playerstate.last_factor_window}')
+                PlayerModel.playerstate.handle_180_timeout()
                 for pid, p in PlayerModel.playerstate.players.items():
                     if 'update_180' in p:
                         print('for participant_id', pid)
@@ -53,7 +53,7 @@ def process_metadata_file(fname):
                 PlayerModel.playerstate.handle_player_profile(pp)
 
         if sub_type == 'Event:MissionState':
-            PlayerModel.playerstate.handle_mission_state(m)
+            PlayerModel.playerstate.handle_mission_state(dat)
 
         if sub_type == 'Event:Triage':
             PlayerModel.playerstate.handle_event_triage(dat, exp_id, trial_id)
