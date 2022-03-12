@@ -32,6 +32,13 @@ def process_metadata_file(fname):
             ret = PlayerModel.playerstate.update_elapsed(elapsed_ms)
             # if not ret:
             #     pprint(f'Issue updating elapsed time.\nBad message {m}')
+            timed_out_180 = PlayerModel.playerstate.check_180_timeout()
+            if timed_out_180:
+                print(f'Timedout 180 data {PlayerModel.playerstate.last_factor_window}')
+                for pid, p in PlayerModel.playerstate.players.items():
+                    if 'update_180' in p:
+                        print('for participant_id', pid)
+                        pprint(p['update_180'])
 
         if message_type == 'trial' and sub_type == 'start':
             # pprint(m)

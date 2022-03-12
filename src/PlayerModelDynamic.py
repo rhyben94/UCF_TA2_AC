@@ -88,7 +88,7 @@ Transporter_Transport_to_Evacuation_ratio_LowerThreshold_List = [.1, .1, .1, .1,
 Transporter_Transports_Completed_Count_UpperThreshold_List = [4, 4, 6, 6, 6]
 Transporter_Transports_Completed_Count_LowerThreshold_List = [1, 1, 1, 1, 1]
 
-max_index_180_timeout = 4
+max_index_180_timeout = 5
 
 timeout_180_reset_list = set()
 
@@ -109,11 +109,8 @@ def compute_task_potential_factor(current_window, count_current_window, upper_th
 
 
 def compute_state_average_current_window(task_potential_factors_list_cw,
-                                         factor_coef_1,
-                                         factor_coef_2,
-                                         factor_coef_3,
-                                         factor_coef_4,
-                                         factor_coef_5):
+                                         FactorCoefficients):
+    factor_coef_1, factor_coef_2, factor_coef_3, factor_coef_4, factor_coef_5 = FactorCoefficients
     num = task_potential_factors_list_cw[0] * factor_coef_1 + \
           task_potential_factors_list_cw[1] * factor_coef_2 + \
           task_potential_factors_list_cw[2] * factor_coef_1 + \
@@ -133,6 +130,9 @@ def init_from_player_profile(player_info, player_profile):
     # Step 1
     player_info['TaskPotential_Start'] = player_profile['task-potential-category']
     player_info['TeamPotential_Category'] = player_profile['team-potential-category']
+    TaskPotential_Categorization_LastWindow = player_info['TaskPotential_Categorization_LastWindow']
+    if not TaskPotential_Categorization_LastWindow:
+        player_info['TaskPotential_Categorization_LastWindow'] = player_info['TaskPotential_Start']
     # Step 2
     if player_info['TaskPotential_Start'] == 'HighTask':
         player_info['TaskPotential_BaseModifier'] = TaskPotential_HighModifier
@@ -224,10 +224,48 @@ def handle_obs_state(player_info, pid, dat):
 
 
 # Step 3 functions
+
+def do_step_3_seq_3(TaskPotential_Factors_CurrentWindow,
+                    FactorCoefficients,
+                    TaskPotential_StateAverage_LastWindow
+                    ):
+    print('TaskPotential_Factors_CurrentWindow', TaskPotential_Factors_CurrentWindow)
+    TaskPotential_StateAverage_CurrentWindow = compute_state_average_current_window(TaskPotential_Factors_CurrentWindow,
+                                                                                    FactorCoefficients)
+
+    TaskPotential_StateAverage_Delta = TaskPotential_StateAverage_CurrentWindow - TaskPotential_StateAverage_LastWindow
+    return {'TaskPotential_StateAverage_CurrentWindow': TaskPotential_StateAverage_CurrentWindow}
+
+def do_step_3_seq_4(current_window,
+                    player_info,
+                    TaskPotential_StateAverages_List,
+                    TaskPotential_RealTime_Factors_Coefficient,
+                    TaskPotential_RecategorizationThresholds_High_List,
+                    TaskPotential_RecategorizationThresholds_Low_List):
+    TaskPotential_BaseModifier = player_info['TaskPotential_BaseModifier']
+    TaskPotential_Calculation = TaskPotential_BaseModifier + sum(
+        TaskPotential_StateAverages_List) * TaskPotential_RealTime_Factors_Coefficient
+
+    TaskPotential_Categorization_LastWindow = player_info['TaskPotential_Categorization_LastWindow']
+    if TaskPotential_Calculation >= TaskPotential_RecategorizationThresholds_High_List[current_window]:
+        TaskPotential_Categorization_CurrentWindow = 'HighTask'
+    elif TaskPotential_Calculation <= TaskPotential_RecategorizationThresholds_Low_List[current_window]:
+        TaskPotential_Categorization_CurrentWindow = 'LowTask'
+    else:
+        TaskPotential_Categorization_CurrentWindow = TaskPotential_Categorization_LastWindow
+
+    if TaskPotential_Categorization_CurrentWindow == TaskPotential_Categorization_LastWindow:
+        TaskPotential_Changed = False
+    else:
+        TaskPotential_Changed = True
+    return {'TaskPotential_Changed': TaskPotential_Changed,
+            'TaskPotential_Categorization_CurrentWindow': TaskPotential_Categorization_CurrentWindow
+            }
+
 def update_medic_180(player_info, current_window):
     print('update medic 180 before state', current_window)
-    pprint(player_info)
-    print()
+    # pprint(player_info)
+    # print()
     # step 3 Seq 1
     Motion_CurrentWindow = player_info['Motion_CurrentWindow']
     Medic_TriageSuccessful_Count_CurrentWindow = player_info['Medic_TriageSuccessful_Count_CurrentWindow']
@@ -297,15 +335,53 @@ def update_medic_180(player_info, current_window):
     if 'TaskPotential_Factor_5_list' not in player_info:
         player_info['TaskPotential_Factor_5_list'] = []
     # player_info['TaskPotential_Factor_5_list'].append(TaskPotential_Factor_5_CurrentWindow)
-    print('update medic 180 after state', current_window)
-    pprint(player_info)
-    print()
 
+    # seq 3
+    TaskPotential_Factors_CurrentWindow = [TaskPotential_Factor_1_CurrentWindow,
+                                           TaskPotential_Factor_2_CurrentWindow,
+                                           TaskPotential_Factor_3_CurrentWindow,
+                                           TaskPotential_Factor_4_CurrentWindow,
+                                           TaskPotential_Factor_5_CurrentWindow]
+    FactorCoefficients = [Medic_FactorCoefficient_1,
+                          Medic_FactorCoefficient_2,
+                          Medic_FactorCoefficient_3,
+                          Medic_FactorCoefficient_4,
+                          Medic_FactorCoefficient_5]
+    TaskPotential_Factors_List = player_info['TaskPotential_Factors_List']
+    TaskPotential_Factors_List.append(TaskPotential_Factors_CurrentWindow)
+    TaskPotential_StateAverage_LastWindow = player_info['TaskPotential_StateAverage_LastWindow']
+    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients, TaskPotential_StateAverage_LastWindow)
+    TaskPotential_StateAverage_CurrentWindow = seq_3_result['TaskPotential_StateAverage_CurrentWindow']
+    TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
+    TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)
+
+    # seq 4
+    seq_4_result = do_step_3_seq_4(current_window,
+                                   player_info,
+                                   TaskPotential_StateAverages_List,
+                                   Medic_TaskPotential_RealTime_Factors_Coefficient,
+                                   Medic_TaskPotential_RecategorizationThresholds_High_List,
+                                   Medic_TaskPotential_RecategorizationThresholds_Low_List
+                                   )
+    print('seq_4_result')
+    pprint(seq_4_result)
+    TaskPotential_Categorization_CurrentWindow = seq_4_result['TaskPotential_Categorization_CurrentWindow']
+    TaskPotential_Changed = seq_4_result['TaskPotential_Changed']
+    TeamPotential_Category = player_info['TeamPotential_Category']
+    PlayerProfiler_Draft.make_player_profile(TaskPotential_Categorization_CurrentWindow, TeamPotential_Category)
+    # print('update medic 180 after state', current_window)
+    # pprint(player_info)
+    # print()
+    reset_vars_step_3_seq_5(player_info)
+    return {'TaskPotential_Changed': TaskPotential_Changed,
+            'TaskPotential_Category': TaskPotential_Categorization_CurrentWindow,
+            'TaskPotential_Factors_List': TaskPotential_Factors_List
+            }
 
 def update_engg_180(player_info, current_window):
-    print('update engg 180 before state', current_window)
-    pprint(player_info)
-    print()
+    # print('update engg 180 before state', current_window)
+    # pprint(player_info)
+    # print()
     # step 3 seq 1
     Motion_CurrentWindow = player_info['Motion_CurrentWindow']
     Engineer_RubbleDestroyed_Count_CurrentWindow = player_info['Engineer_RubbleDestroyed_Count_CurrentWindow']
@@ -345,16 +421,51 @@ def update_engg_180(player_info, current_window):
                                                                          Engineer_Rubble_to_Transports_ratio_CurrentWindow,
                                                                          Engineer_Rubble_to_Transports_ratio_UpperThreshold_List,
                                                                          Engineer_Rubble_to_Transports_ratio_LowerThreshold_List)
-    print('update engg 180 after state', current_window)
-    pprint(player_info)
-    print()
+    # seq 3
+    TaskPotential_Factors_CurrentWindow = [TaskPotential_Factor_1_CurrentWindow,
+                                           TaskPotential_Factor_2_CurrentWindow,
+                                           TaskPotential_Factor_3_CurrentWindow,
+                                           TaskPotential_Factor_4_CurrentWindow,
+                                           TaskPotential_Factor_5_CurrentWindow]
+    FactorCoefficients = [Engineer_FactorCoefficient_1,
+                          Engineer_FactorCoefficient_2,
+                          Engineer_FactorCoefficient_3,
+                          Engineer_FactorCoefficient_4,
+                          Engineer_FactorCoefficient_5]
+    TaskPotential_Factors_List = player_info['TaskPotential_Factors_List']
+    TaskPotential_Factors_List.append(TaskPotential_Factors_CurrentWindow)
+    TaskPotential_StateAverage_LastWindow = player_info['TaskPotential_StateAverage_LastWindow']
+    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients, TaskPotential_StateAverage_LastWindow)
+    TaskPotential_StateAverage_CurrentWindow = seq_3_result['TaskPotential_StateAverage_CurrentWindow']
+    TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
+    TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)
 
+    # seq 4
+    seq_4_result = do_step_3_seq_4(current_window,
+                                   player_info,
+                                   TaskPotential_StateAverages_List,
+                                   Engineer_TaskPotential_RealTime_Factors_Coefficient,
+                                   Engineer_TaskPotential_RecategorizationThresholds_High_List,
+                                   Engineer_TaskPotential_RecategorizationThresholds_Low_List
+                                   )
+    TaskPotential_Categorization_CurrentWindow = seq_4_result['TaskPotential_Categorization_CurrentWindow']
+    TaskPotential_Changed = seq_4_result['TaskPotential_Changed']
+    TeamPotential_Category = player_info['TeamPotential_Category']
+    PlayerProfiler_Draft.make_player_profile(TaskPotential_Categorization_CurrentWindow, TeamPotential_Category)
+    # print('update engg 180 after state', current_window)
+    # pprint(player_info)
+    # print()
+    reset_vars_step_3_seq_5(player_info)
+    return {'TaskPotential_Changed': TaskPotential_Changed,
+            'TaskPotential_Category': TaskPotential_Categorization_CurrentWindow,
+            'TaskPotential_StateAverages_List': TaskPotential_StateAverages_List,
+            }
 
 # TODO print to stdout, vars in seq 1 and seq 2
 def update_transporter_180(player_info, current_window):
-    print('update transporter 180 before state', current_window)
-    pprint(player_info)
-    print()
+    # print('update transporter 180 before state', current_window)
+    # pprint(player_info)
+    # print()
     # seq 1
     Transports_Completed_Count_CurrentWindow = player_info['Transports_Completed_Count_CurrentWindow']
     Transporter_Evacuations_Count_CurrentWindow = player_info['Transporter_Evacuations_Count_CurrentWindow']
@@ -406,45 +517,38 @@ def update_transporter_180(player_info, current_window):
                                            TaskPotential_Factor_3_CurrentWindow,
                                            TaskPotential_Factor_4_CurrentWindow,
                                            TaskPotential_Factor_5_CurrentWindow]
-    print('TaskPotential_Factors_CurrentWindow', TaskPotential_Factors_CurrentWindow)
-    TaskPotential_Factors_List = [TaskPotential_Factors_CurrentWindow]
-    TaskPotential_StateAverage_CurrentWindow = compute_state_average_current_window(TaskPotential_Factors_CurrentWindow,
-                                                                                    Transporter_FactorCoefficient_1,
-                                                                                    Transporter_FactorCoefficient_2,
-                                                                                    Transporter_FactorCoefficient_3,
-                                                                                    Transporter_FactorCoefficient_4,
-                                                                                    Transporter_FactorCoefficient_5)
+    FactorCoefficients = [Transporter_FactorCoefficient_1,
+                          Transporter_FactorCoefficient_2,
+                          Transporter_FactorCoefficient_3,
+                          Transporter_FactorCoefficient_4,
+                          Transporter_FactorCoefficient_5]
+    TaskPotential_Factors_List = player_info['TaskPotential_Factors_List']
+    TaskPotential_Factors_List.append(TaskPotential_Factors_CurrentWindow)
+    TaskPotential_StateAverage_LastWindow = player_info['TaskPotential_StateAverage_LastWindow']
+    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients, TaskPotential_StateAverage_LastWindow)
+    TaskPotential_StateAverage_CurrentWindow = seq_3_result['TaskPotential_StateAverage_CurrentWindow']
     TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
     TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)
-    TaskPotential_StateAverage_LastWindow = player_info['TaskPotential_StateAverage_LastWindow']
-    TaskPotential_StateAverage_Delta = TaskPotential_StateAverage_CurrentWindow - TaskPotential_StateAverage_LastWindow
 
     # seq 4
-    TaskPotential_BaseModifier = player_info['TaskPotential_BaseModifier']
-    TaskPotential_Calculation = TaskPotential_BaseModifier + sum(
-        TaskPotential_StateAverages_List) * Transporter_TaskPotential_RealTime_Factors_Coefficient
-
-    TaskPotential_Categorization_LastWindow = player_info['TaskPotential_Categorization_LastWindow']
-    if TaskPotential_Calculation >= Transporter_TaskPotential_RecategorizationThresholds_High_List[current_window]:
-        TaskPotential_Categorization_CurrentWindow = 'HighTask'
-    elif TaskPotential_Calculation <= Transporter_TaskPotential_RecategorizationThresholds_Low_List[current_window]:
-        TaskPotential_Categorization_CurrentWindow = 'LowTask'
-    else:
-        TaskPotential_Categorization_CurrentWindow = TaskPotential_Categorization_LastWindow
-
-    if TaskPotential_Categorization_CurrentWindow == TaskPotential_Categorization_LastWindow:
-        TaskPotential_Changed = False
-    else:
-        TaskPotential_Changed = True
-
+    seq_4_result = do_step_3_seq_4(current_window,
+                                   player_info,
+                                   TaskPotential_StateAverages_List,
+                                   Transporter_TaskPotential_RealTime_Factors_Coefficient,
+                                   Transporter_TaskPotential_RecategorizationThresholds_High_List,
+                                   Transporter_TaskPotential_RecategorizationThresholds_Low_List
+                                   )
+    TaskPotential_Categorization_CurrentWindow = seq_4_result['TaskPotential_Categorization_CurrentWindow']
+    TaskPotential_Changed = seq_4_result['TaskPotential_Changed']
     TeamPotential_Category = player_info['TeamPotential_Category']
     PlayerProfiler_Draft.make_player_profile(TaskPotential_Categorization_CurrentWindow, TeamPotential_Category)
-    print('update transporter 180 after state', current_window)
-    pprint(player_info)
-    print()
+    # print('update transporter 180 after state', current_window)
+    # pprint(player_info)
+    # print()
     reset_vars_step_3_seq_5(player_info)
     return {'TaskPotential_Changed': TaskPotential_Changed,
             'TaskPotential_Category': TaskPotential_Categorization_CurrentWindow,
+            'TaskPotential_Factors_List': TaskPotential_Factors_List
             }
 
 
@@ -466,10 +570,13 @@ def handle_180_sec_timeout(player_infos, factor):
     for pi in player_infos:
         role = pi['role']
         if role == 'medic':
-            update_medic_180(pi, factor)
+            ret = update_medic_180(pi, factor)
+            pi['update_180'] = ret
         elif role == 'engineer':
-            update_engg_180(pi, factor)
+            ret = update_engg_180(pi, factor)
+            pi['update_180'] = ret
         elif role == 'transporter':
-            update_transporter_180(pi, factor)
+            ret = update_transporter_180(pi, factor)
+            pi['update_180'] = ret
         else:
             print('Unknown role for player: ', role)

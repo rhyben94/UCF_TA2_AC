@@ -265,21 +265,24 @@ class PlayerState:
         # print('QID set', len(self.req_qid_set))
 
     def check_180_timeout(self):
+        ret_data = False
         current_factor_window = (int)(self.elapsed_time / factor_windows)
         if current_factor_window != self.last_factor_window:
-            if -1 < current_factor_window <= player_dynamic.max_index_180_timeout:
+            if 0 < current_factor_window <= player_dynamic.max_index_180_timeout:
                 print(
                     f'Handle 180 second timeout {self.last_factor_window} => {current_factor_window} @time {self.elapsed_time}')
-                player_dynamic.handle_180_sec_timeout(self.players.values(), current_factor_window)
+                player_dynamic.handle_180_sec_timeout(self.players.values(), self.last_factor_window)
+                ret_data = True
             self.last_factor_window = current_factor_window
+        return ret_data
 
     def update_elapsed(self, elapsed_ms):
         if elapsed_ms == -1:
-            self.elapsed_time
-            return True
+            # self.elapsed_time
+            # print(f'update_elapsed given {elapsed_ms} => {self.elapsed_time}')
+            return False
         if elapsed_ms > self.elapsed_time:
             self.elapsed_time = elapsed_ms
-            self.check_180_timeout()
             return True
         delta = elapsed_ms - self.elapsed_time
         # for printing, tolerate delta of 30ms
@@ -341,7 +344,8 @@ class PlayerState:
                 'Transport_Distances_CurrentWindow_List': [],
                 'TaskPotential_StateAverages_List': [],
                 'TaskPotential_Categorization_LastWindow': None,
-                'TaskPotential_StateAverage_LastWindow': 0
+                'TaskPotential_StateAverage_LastWindow': 0,
+                'TaskPotential_Factors_List': []
                 }
 
     def handle_survey_values(self, vals, exp_id, trial_id):
