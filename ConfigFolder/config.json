@@ -13,10 +13,14 @@
         ],
         "subscribes": [
             {"topic": "trial", "message_type": "trial"},
-            {"topic":  "status/asistdataingester/surveyresponse", "sub_type": "Status:SurveyResponse"},
+            {"topic": "status/asistdataingester/surveyresponse", "sub_type": "Status:SurveyResponse"},
             {"topic": "observations/events/mission"},
-            {"topic": "observations/events/player/role_selected", "message_type": "event", "sub_type": "Event:RoleSelected"},
-            {"topic": "observations/events/player/triage", "message_type": "event", "sub_type": "Event:Triage"}
+            {"topic": "observations/events/player/triage", "message_type": "event", "sub_type": "Event:Triage"},
+            {"topic": "observations/events/player/rubble_destroyed"},
+            {"topic":  "observations/events/server/victim_evacuated"},
+            {"topic":  "observations/events/player/victim_picked_up"},
+            {"topic":  "observations/events/server/victim_placed"},
+            {"topic":  "observations/state", "sub_type":  "state"}
         ]
     }
 }
