@@ -263,7 +263,7 @@ def do_step_3_seq_4(current_window,
             }
 
 def update_medic_180(player_info, current_window):
-    print('update medic 180 before state', current_window)
+    print(f'update medic 180 index: {current_window}')
     # pprint(player_info)
     # print()
     # step 3 Seq 1
@@ -375,11 +375,12 @@ def update_medic_180(player_info, current_window):
     reset_vars_step_3_seq_5(player_info)
     return {'TaskPotential_Changed': TaskPotential_Changed,
             'TaskPotential_Category': TaskPotential_Categorization_CurrentWindow,
+            'TaskPotential_StateAverages_List': TaskPotential_StateAverages_List,
             'TaskPotential_Factors_List': TaskPotential_Factors_List
             }
 
 def update_engg_180(player_info, current_window):
-    # print('update engg 180 before state', current_window)
+    print(f'update engg 180 index: {current_window}')
     # pprint(player_info)
     # print()
     # step 3 seq 1
@@ -459,11 +460,12 @@ def update_engg_180(player_info, current_window):
     return {'TaskPotential_Changed': TaskPotential_Changed,
             'TaskPotential_Category': TaskPotential_Categorization_CurrentWindow,
             'TaskPotential_StateAverages_List': TaskPotential_StateAverages_List,
+            'TaskPotential_Factors_List': TaskPotential_Factors_List
             }
 
 # TODO print to stdout, vars in seq 1 and seq 2
 def update_transporter_180(player_info, current_window):
-    # print('update transporter 180 before state', current_window)
+    print(f'update transporter 180 index: {current_window}')
     # pprint(player_info)
     # print()
     # seq 1
@@ -548,6 +550,7 @@ def update_transporter_180(player_info, current_window):
     reset_vars_step_3_seq_5(player_info)
     return {'TaskPotential_Changed': TaskPotential_Changed,
             'TaskPotential_Category': TaskPotential_Categorization_CurrentWindow,
+            'TaskPotential_StateAverages_List': TaskPotential_StateAverages_List,
             'TaskPotential_Factors_List': TaskPotential_Factors_List
             }
 
