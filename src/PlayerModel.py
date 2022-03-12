@@ -244,8 +244,10 @@ qid_defaults = {'QID13_1': 5.502857143,
                 'QID872_8': 80.44571429}
 
 factor_windows = 180 * 1000  # every 180 seconds since the mission start,  we fire "end of 180 second loop" event
-
-print('factor_windows = ', factor_windows)
+# When the mission time is 18 minutes and we need to start processing dynamic player at elapsed
+# time 6 seconds, index_adjustment_180 will change to 2
+index_adjustment_180 = 1
+print(f'factor_windows = {factor_windows} index_adjustment_180 {index_adjustment_180}')
 
 
 def get_required_qids():
@@ -256,25 +258,54 @@ def get_required_qids():
     return qid_set
 
 
+def make_player_profile_message(participant_id, player_info):
+    # print(f'participant_id {participant_id}')
+    # pprint(player_info)
+    team_cat = player_info['TeamPotential_Category']
+    update_180 = player_info['update_180']
+    task_cat = update_180['TaskPotential_Category']
+    task_pot_changed = update_180['TaskPotential_Changed']
+    task_factors_list = update_180['TaskPotential_Factors_List']
+    task_state_avgs_list = update_180['TaskPotential_StateAverages_List']
+    player_profile = player_profiler.make_player_profile(task_cat, team_cat)
+    ppm = {'participant_id': participant_id,
+           'callsign': player_info['callsign'],
+           'role': player_info['role'],
+           'player-profile': player_profile,
+           'team-potential-category': team_cat,
+           'task-potential-category': task_cat,
+           'task-potential-changed': task_pot_changed,
+           'task-potential-factors-list': task_factors_list,
+           'task-potential-state-averages-list': task_state_avgs_list}
+    return ppm
+
+
 class PlayerState:
     def __init__(self):
         self.players = {}
         self.req_qid_set = get_required_qids()
         self.elapsed_time = -1  # -1 implies mission ended
-        self.last_factor_window = -1
+        self.last_factor_window = 0
         # print('QID set', len(self.req_qid_set))
 
     def check_180_timeout(self):
         ret_data = False
         current_factor_window = (int)(self.elapsed_time / factor_windows)
-        if current_factor_window != self.last_factor_window:
-            if 0 < current_factor_window <= player_dynamic.max_index_180_timeout:
-                print(
-                    f'Handle 180 second timeout {self.last_factor_window} => {current_factor_window} @time {self.elapsed_time}')
-                player_dynamic.handle_180_sec_timeout(self.players.values(), self.last_factor_window)
-                ret_data = True
-            self.last_factor_window = current_factor_window
+        if current_factor_window > self.last_factor_window:
+            print(
+                f'check_180_timeout timeout {self.last_factor_window} => {current_factor_window} @time {self.elapsed_time}')
+            ret_data = True
+        self.last_factor_window = current_factor_window
         return ret_data
+
+    def handle_180_timeout(self):
+        print(f'handle_180_timeout count {self.last_factor_window}')
+        my_adjusted_factor = self.last_factor_window - index_adjustment_180
+        if 0 <= my_adjusted_factor < player_dynamic.max_index_180_timeout:
+            player_dynamic.handle_180_sec_timeout(self.players.values(), my_adjusted_factor)
+        else:
+            print(
+                f'Not handling handle_180_timeout: my_adjusted_factor {my_adjusted_factor} not in range [0 {player_dynamic.max_index_180_timeout - 1}]')
 
     def update_elapsed(self, elapsed_ms):
         if elapsed_ms == -1:
@@ -312,7 +343,7 @@ class PlayerState:
                     print(f'Player {participant_id} call sign changed: {old} -> {callsign}')
             self.players[participant_id]['callsign'] = callsign
             if 'role' in self.players[participant_id]:
-                old = self.players['participant_id']['role']
+                old = self.players[participant_id]['role']
                 if old != role:
                     print(f'Player {participant_id} role changed: {old} -> {role}')
             self.players[participant_id]['role'] = role
@@ -371,9 +402,9 @@ class PlayerState:
             player_profile = self.compute_player_profile(participant_id)
             print('Publish Player Profile')
             pprint(player_profile)
-        # else:
-        #     print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
-        # print()
+        else:
+            print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
+        print()
         return {'collected': collected, 'have_all': have_all, 'player_profile': player_profile}
 
     # for missing qid vals, we add defaults and return new map
@@ -525,10 +556,10 @@ class PlayerState:
         for p in self.players.items():
             pprint(p)
 
-    def handle_mission_state(self, msg):
+    def handle_mission_state(self, dat):
         # pprint(msg)
-        state = msg['data']['mission_state']
-        elapsed = msg['data']['elapsed_milliseconds']
+        state = dat['mission_state']
+        elapsed = dat['elapsed_milliseconds']
         print(f'Mission State {state} Elapsed ms {self.elapsed_time} => {elapsed}')
         self.elapsed_time = elapsed  # -1 implies mission ended
 
