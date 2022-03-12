@@ -21,19 +21,48 @@ def handle_trial_start(dat, exp_id, trial_id):
     PlayerModel.playerstate.handle_trial_start(dat['client_info'], exp_id, trial_id)
 
 
+def send_message(player_profile, trial_id):
+    topic = f'agent/{helper.agent_name}/playerprofile'
+    msg_type = 'agent'
+    sub_type = 'playerprofile'
+    sub_type_version = 0.1
+    print('publishing player profile', player_profile)
+    helper.send_msg(topic, msg_type, sub_type, sub_type_version, data=player_profile, trial_key=trial_id)
+
 def handle_survey_message(dat, exp_id, trial_id):
     x = PlayerModel.playerstate.handle_survey_values(dat['values'], exp_id, trial_id)
     player_profile = x['player_profile']
     # collected = x['collected']
     # have_all = x['have_all']
     if player_profile:
-        topic = f'agent/{helper.agent_name}/playerprofile'
-        msg_type = 'agent'
-        sub_type = 'playerprofile'
-        sub_type_version = 0.1
-        print('publishing player profile', player_profile)
-        helper.send_msg(topic, msg_type, sub_type, sub_type_version, data=player_profile, trial_key=trial_id)
+        send_message(player_profile, trial_id)
+        PlayerModel.playerstate.handle_player_profile(player_profile)
 
+
+def update_time(dat, trial_id):
+    if 'elapsed_milliseconds' in dat:
+        elapsed_ms = dat['elapsed_milliseconds']
+        ret = PlayerModel.playerstate.update_elapsed(elapsed_ms)
+        # if not ret:
+        #     pprint(f'Issue updating elapsed time.\nBad message {m}')
+        check_and_handle_180_timeout(trial_id)
+
+
+def check_and_handle_180_timeout(trial_id):
+    timed_out_180 = PlayerModel.playerstate.check_180_timeout()
+    if timed_out_180:
+        PlayerModel.playerstate.handle_180_timeout()
+        # print(f'Timedout 180 data {PlayerModel.playerstate.last_factor_window}')
+        for pid, p in PlayerModel.playerstate.players.items():
+            if 'update_180' in p:
+                print('for participant_id', pid)
+                pprint(p['update_180'])
+                print()
+                player_profile = PlayerModel.make_player_profile_message(pid, p)
+                print('publishing player_profile')
+                pprint(player_profile)
+                send_message(player_profile, trial_id)
+        print()
 
 # This is the function which is called when a message is received for a to
 # topic which this Agent is subscribed to.
@@ -41,6 +70,8 @@ def on_message(topic, header, msg, data, mqtt_message):
     global helper, extra_info, logger
     exp_id = msg['experiment_id']
     trial_id = msg['trial_id']
+    sub_type = msg['sub_type']
+    message_type = header['message_type']
     # print('####')
     # pprint(header)
     # pprint(msg)
@@ -48,30 +79,46 @@ def on_message(topic, header, msg, data, mqtt_message):
     # pprint(mqtt_message)
     # print('-----\n')
 
+    update_time(data, trial_id)
+
+    # logger.info("Received a message on the topic: " + topic + ' sub_type: ' + sub_type)
     # Now handle the message based on the topic.  Refer to Message Specs for the contents of header, msg, and data
-    if topic == 'trial' and msg['sub_type'] == 'start':
+    if topic == 'trial' and sub_type == 'start':
         # handle the start of a trial!!
         logger.info("Received a message on the topic: " + topic)
         logger.info(" - Trial Started with Mission set to: " + data['experiment_mission'])
         handle_trial_start(data, exp_id, trial_id)
 
-    if msg['sub_type'] == 'Status:SurveyResponse':
-        logger.info("Received a message on the topic: " + topic)
+    if sub_type == 'Status:SurveyResponse':
+        # logger.info("Received a message on the topic: " + topic)
         handle_survey_message(data, exp_id, trial_id)
 
-    # elif topic == 'observations/events/player/role_selected':
-    #     minutes = int(data['elapsed_milliseconds'] / 1000 / 60)
-    #     seconds = (data['elapsed_milliseconds'] / 1000) - (minutes * 60)
-    #
-    #     logger.info(" - At " + str(minutes) + ":" + str(seconds) + " into the mission " + data['participant_id'] + " selected the role: " + data['new_role'])
-    #
-    #     logger.info(" - Publishing a comment on the roll change!!")
-    #     # use the info read in from the extra info file to form the comment
-    #     if data['new_role'] in extra_info.keys():
-    #         comment = extra_info[data['new_role']]
-    #     else:
-    #         comment = extra_info['default']
-    #     comment = comment.format(data['new_role'])
+    if sub_type == 'Event:MissionState':
+        PlayerModel.playerstate.handle_mission_state(data)
+
+    if sub_type == 'Event:Triage':
+        # logger.info("Received a message on the topic: " + topic)
+        PlayerModel.playerstate.handle_event_triage(data, exp_id, trial_id)
+
+    if sub_type == 'Event:RubbleDestroyed':
+        # logger.info("Received a message on the topic: " + topic)
+        PlayerModel.playerstate.handle_rubble_destroyed(data, exp_id, trial_id)
+
+    if sub_type == 'Event:VictimEvacuated':
+        # logger.info("Received a message on the topic: " + topic)
+        PlayerModel.playerstate.handle_victim_evacuated(data, exp_id, trial_id)
+
+    if sub_type == 'Event:VictimPickedUp':
+        # logger.info("Received a message on the topic: " + topic)
+        PlayerModel.playerstate.handle_victim_picked_up(data, exp_id, trial_id)
+
+    if sub_type == 'Event:VictimPlaced':
+        # logger.info("Received a message on the topic: " + topic)
+        PlayerModel.playerstate.handle_victim_placed(data, exp_id, trial_id)
+
+    if message_type == 'observation' and sub_type == 'state':
+        PlayerModel.playerstate.handle_obs_state(data, exp_id, trial_id)
+
     #
     #     # build up the message's data and publish it
     #     msg_data = {
@@ -108,8 +155,8 @@ logger.setLevel(logging.INFO)
 logger.addHandler(LOG_HANDLER)
 
 # examples of manually subscribing and unsubscribing to topics
-helper.subscribe('observations/events/player/tool_used')
-helper.unsubscribe('observations/events/player/triage', 'event', 'Event:Triage')
+# helper.subscribe('observations/events/player/tool_used')
+# helper.unsubscribe('observations/events/player/triage', 'event', 'Event:Triage')
 
 # load extra info from the ConfigFolder for use later
 extra_path = os.path.join(helper.config_folder, 'extraInfo.json')
