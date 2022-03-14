@@ -113,9 +113,9 @@ def compute_state_average_current_window(task_potential_factors_list_cw,
     factor_coef_1, factor_coef_2, factor_coef_3, factor_coef_4, factor_coef_5 = FactorCoefficients
     num = task_potential_factors_list_cw[0] * factor_coef_1 + \
           task_potential_factors_list_cw[1] * factor_coef_2 + \
-          task_potential_factors_list_cw[2] * factor_coef_1 + \
-          task_potential_factors_list_cw[3] * factor_coef_1 + \
-          task_potential_factors_list_cw[4] * factor_coef_1
+          task_potential_factors_list_cw[2] * factor_coef_3 + \
+          task_potential_factors_list_cw[3] * factor_coef_4 + \
+          task_potential_factors_list_cw[4] * factor_coef_5
     den = factor_coef_1 + factor_coef_2 + factor_coef_3 + factor_coef_4 + factor_coef_5
     return num / den
 
