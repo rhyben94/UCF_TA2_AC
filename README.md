@@ -183,24 +183,27 @@ For callsign and participant_id, see [client_info.md](../Trial/client_info.md)
 ```json
 {
   "data": {
-    "player-profile": "HighTaskLowTeam",
-    "team-potential-category": "LowTeam",
-    "task-potential-category": "LowTask",
-    "participant_id": "P000443",
-    "callsign": "Green"
-    "TaskPotential_Category": "LowTask",
-    "TaskPotential_Changed": False,
-    "TaskPotential_StateAverage": 0.25925925925925924,
-    "TaskPotential_StateAverages_List": [-0.8518518518518519,
+    'callsign': 'Green',
+    'participant_id': 'P000452',
+    'player-profile': 'HighTaskLowTeam',
+    'role': 'transporter',
+    'task-potential-category': 'HighTask',
+    'team-potential-category': 'LowTeam
+  }
+}
+
+{
+  "data": {
+    "TaskPotential_Category": "HighTask",
+    "TaskPotential_Changed": True,
+    "TaskPotential_Factors_List": [[1, 1, 1, 1, 1],
+                                   [0, -1, 1, 1, -1],
+                                   [0, -1, 1, 1, 0],
+                                   [1, -1, 1, 0, 1]],
+    "TaskPotential_StateAverages_List": [0.5925925925925926,
                                          0.25925925925925924,
-                                         0.8518518518518519,
-                                         1.0,
-                                         0.25925925925925924],
-     "TaskPotential_Factors_List": [[1, 0, 1, 1, 0],
-                                   [1, 1, 1, 1, 0],
-                                   [0, 1, 1, 1, 0],
-                                   [1, 1, 1, 1, 0],
-                                   [0, 0, 1, 1, 0]]
+                                         0.6296296296296297,
+                                         1.0],
   }
 }
 ```
