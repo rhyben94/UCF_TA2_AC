@@ -124,11 +124,23 @@ Purpose: Player Profiles on ‘potential’ in teamwork and in taskwork used to 
 
 
 ## Outputs:
-Static Profile
-- [Participant_Id, PlayerRole, TaskPotential_Category, TeamPotential_Category, PlayerProfile]
+The outputs described below will first be published after both competency test and intake survey data are published on the message bus, and will be updated every 180 seconds of mission time. Note that the start time for the updating period is immediately after the mission prep session, yielding a total of 5 updates over the course of each 15 minute mission.
 
-Dynamic Profile
-- [Participant_Id, PlayerRole, TaskPotential_Category, TaskPotential_Changed, TaskPotential_StateAverage, TaskPotential_StateAveragesList, TaskPotential_Factors_List]
+A full blueprint of the design of the dynamic player profile model can be reviewed here: https://docs.google.com/presentation/d/1Z1QMkGs2D6fZSxsZO9CM2bFzGYzZaVbjTieoUenhQho/edit#slide=id.g1180270cc54_0_113
+
+Player Profile and associated metrics
+- [Participant_Id, PlayerRole, PlayerProfile, TaskPotential_Category, TaskPotential_Changed, TaskPotential_StateAverage, TaskPotential_StateAveragesList, TaskPotential_Factors_List]
+- Participant ID: the player's unique ID. This variable is persistent for players and is made available for distinguishing players from each other. 
+- PlayerRole: the player's team role (Medic, Engineer, or Transporter). This variable is persistent for players as they cannot change their role once assigned.
+- PlayerProfile: the player's profile category that describes their combined potential for tasking and teaming behaviors (HighTaskHighTeam, HighTaskLowTeam, LowTaskHighTeam, LowTaskLowTeam). 
+- TaskPotential_Category: the player's task profile category that describes their potential for effective tasking behaviors (HighTask, LowTask). 
+- TaskPotential_Changed: this variable provides information regarding a player's task potential recategorization at each output; if the player has been recategorized (i.e., from LowTask to HighTask or from HighTask to LowTask) since the last output then the value of this variable will be TRUE, otherwise it will be FALSE. 
+- TaskPotential_StateAverage: this variable provides insight on the model driving the recategorization of players with respect to task potential. The state average is a metric of a given player's performance of their particular role during the elapsed time window. The value of state average can range from -1 to +1 (as it is an average, values are unlikely to be integers) and corresponds to a scale of "relatively poor" performance to "relatively good" performance. 
+- TaskPotential_StateAveragesList: this variable provides historical data regarding a given player's TaskPotential_StateAverage as calculated at each elapsed 180 second window. 
+- TaskPotential_Factors_List: this variable provides the values of the list of 5 factors that are measured and calculated for each player and used in the weighted StateAverage calculation. The value of each of the 5 factor scores can range from -1 to +1 (factor scores are integer values) and corresponds to a scale of "relatively poor" performance to "relatively good" performance on each factor. 
+    - Medic Factors: TriageSuccessful_to_Movement_ratio, TriageSuccessful_Count, TriageSuccessful_to_Transports_ratio, Transport_Distance, Transports_Completed_Count 
+    - Engineer Factors: RubbleDestroyed_to_Movement_ratio, RubbleDestroyed_Count, Rubble_to_Transports_ratio, Transport_Distance_Average, Transports_Completed_Count, 
+    - Transporter Factors: Evacuations_Regular_Count, Evacuations_Critical_Count, Transport_Distance_Average, Transports_Completed_Count, Transport_to_Evacuation_ratio
 
 
 #### Bus message format
@@ -140,9 +152,13 @@ Dynamic Profile
 
 | Field Name | Type | Description
 | --- | --- | ---|
-| player-profile | string | Player Profile category represents the categorization of the player as high or low in task potential and in team potential in order to distinguish players as members of four distinct groups that may display differing tasking and teaming behaviors
-| team-potential-category | string | Team potential category represents the categorization of the player as high or low in potential to successfully maintain awareness of their teammates and progress as well as to coordinate activities and resources effectively and efficiently
-| task-potential-category | string | Task potential category represents the categorization of the player as high or low in potential to successfully complete mission related actions effectively and efficiently
+| player-profile | string | Player Profile category represents the categorization of the player as high or low in Task Potential and in Team Potential in order to distinguish players as members of four distinct groups that may display differing tasking and teaming behaviors
+| team-potential-category | string | Team Potential category represents the categorization of the player as high or low in potential to successfully maintain awareness of their teammates and progress as well as to coordinate activities and resources effectively and efficiently
+| task-potential-category | string | Task Potential category represents the categorization of the player as high or low in potential to successfully complete mission related actions effectively and efficiently
+| TaskPotential_Changed | boolean | Task Potential changed represents whether the player has been recategorized due to performance in the elapsed time window
+| TaskPotential_StateAverage | float | Task Potential State_Average represents a weighted metric of the player's performance in the elapsed time window. Values are -1 to +1, poor to good.
+| TaskPotential_StateAveragesList | list | Task Potential State_AveragesList represents a record of the player's state averages for elapsed time windows
+| TaskPotential_Factors_List | list | Task Potential Factors_List provides a list of player's score categorizations on their role specific metrics
 | callsign | string | The callsign of the player
 | participant_id | string | The HSR safe id of the player
 
@@ -151,6 +167,14 @@ Legal values for `player-profile` are `["LowTaskLowTeam", "LowTaskHighTeam", "Hi
 Legal values for `team-potential-category` are `["LowTeam", "HighTeam"]`
 
 Legal values for `task-potential-category` are `["LowTask", "HighTask"]`
+
+Legal values for `TaskPotential_Changed` are `[False , True]`
+
+Legal values for `TaskPotential_StateAverage` range between `-1``+1`
+
+Legal values for `TaskPotential_StateAveragesList` are `[value, value, value, value, value]` with each value ranging between `-1` and `+1`
+
+Legal values for `TaskPotential_Factors_List` are `[[value, value, value, value, value], [value, value, value, value, value], [value, value, value, value, value], [value, value, value, value, value], [value, value, value, value, value]]` with each value ranging between `-1``+1`
 
 For callsign and participant_id, see [client_info.md](../Trial/client_info.md)
 
@@ -164,6 +188,19 @@ For callsign and participant_id, see [client_info.md](../Trial/client_info.md)
     "task-potential-category": "LowTask",
     "participant_id": "P000443",
     "callsign": "Green"
+    "TaskPotential_Category": "LowTask",
+    "TaskPotential_Changed": False,
+    "TaskPotential_StateAverage": 0.25925925925925924,
+    "TaskPotential_StateAverages_List": [-0.8518518518518519,
+                                         0.25925925925925924,
+                                         0.8518518518518519,
+                                         1.0,
+                                         0.25925925925925924],
+     "TaskPotential_Factors_List": [[1, 0, 1, 1, 0],
+                                   [1, 1, 1, 1, 0],
+                                   [0, 1, 1, 1, 0],
+                                   [1, 1, 1, 1, 0],
+                                   [0, 0, 1, 1, 0]]
   }
 }
 ```
