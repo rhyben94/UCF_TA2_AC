@@ -13,7 +13,7 @@ from pprint import pprint
 
 
 def read_file(fname, sort=True):
-    with open(fname, "r") as f:
+    with open(fname, "r",  encoding="utf-8") as f:
         messages = []
         for line in f:
             jline = None
