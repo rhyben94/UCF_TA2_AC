@@ -245,7 +245,7 @@ def do_step_3_seq_4(current_window,
     TaskPotential_BaseModifier = player_info['TaskPotential_BaseModifier']
     TaskPotential_Calculation = TaskPotential_BaseModifier + sum(
         TaskPotential_StateAverages_List) * TaskPotential_RealTime_Factors_Coefficient
-
+    print('TaskPotential_Calculation', TaskPotential_Calculation)
     TaskPotential_Categorization_LastWindow = player_info['TaskPotential_Categorization_LastWindow']
     if TaskPotential_Calculation >= TaskPotential_RecategorizationThresholds_High_List[current_window]:
         TaskPotential_Categorization_CurrentWindow = 'HighTask'
@@ -289,6 +289,7 @@ def update_medic_180(player_info, current_window):
                                                                          Medic_TriageSuccessful_Count_CurrentWindow,
                                                                          Medic_TriageSuccessful_UpperThreshold_List,
                                                                          Medic_TriageSuccessful_LowerThreshold_List)
+    print('Medic_Factor_1_TriageCount' , Medic_TriageSuccessful_Count_CurrentWindow)
 
     # player_info['TaskPotential_Factor_1_CurrentWindow'] = TaskPotential_Factor_1_CurrentWindow
     if 'TaskPotential_Factor_1_list' not in player_info:
@@ -301,6 +302,8 @@ def update_medic_180(player_info, current_window):
                                       Medic_TriageSuccessful_to_MovementRatio_UpperThreshold_List,
                                       Medic_TriageSuccessful_to_MovementRatio_LowerThreshold_List)
 
+    print('Medic_Factor_2_TriageToMove', Medic_TriageSuccessful_to_Movement_ratio_CurrentWindow)
+
     # player_info['TaskPotential_Factor_2_CurrentWindow'] = TaskPotential_Factor_2_CurrentWindow
     if 'TaskPotential_Factor_2_list' not in player_info:
         player_info['TaskPotential_Factor_2_list'] = []
@@ -312,6 +315,8 @@ def update_medic_180(player_info, current_window):
                                                                              100 / Transport_Distance_Average_CurrentWindow,
                                                                              Medic_Transport_Distance_Average_UpperThreshold_List,
                                                                              Medic_Transport_Distance_Average_LowerThreshold_List)
+        print('Medic_Factor_3_InvertedTransportDistanceAVG', 100 / Transport_Distance_Average_CurrentWindow)
+
     # player_info['TaskPotential_Factor_3_CurrentWindow'] = TaskPotential_Factor_3_CurrentWindow
     if 'TaskPotential_Factor_3_list' not in player_info:
         player_info['TaskPotential_Factor_3_list'] = []
@@ -321,6 +326,8 @@ def update_medic_180(player_info, current_window):
                                                                          Transports_Completed_Count_CurrentWindow,
                                                                          Medic_Transports_Completed_Count_UpperThreshold_List,
                                                                          Medic_Transports_Completed_Count_LowerThreshold_List)
+    print('Medic_Factor_4_TransportsCount', Transports_Completed_Count_CurrentWindow)
+
     # player_info['TaskPotential_Factor_4_CurrentWindow'] = TaskPotential_Factor_4_CurrentWindow
     if 'TaskPotential_Factor_4_list' not in player_info:
         player_info['TaskPotential_Factor_4_list'] = []
@@ -330,6 +337,9 @@ def update_medic_180(player_info, current_window):
                                                                          Medic_TriageSuccessful_to_Transports_ratio_CurrentWindow,
                                                                          Medic_TriageSuccessful_to_Transports_ratio_UpperThreshold_List,
                                                                          Medic_TriageSuccessful_to_Transports_ratio_LowerThreshold_List)
+
+    if Medic_TriageSuccessful_to_Transports_ratio_CurrentWindow > 0:
+        print('Medic_Factor_5_TriageToTransports', Medic_TriageSuccessful_to_Transports_ratio_CurrentWindow)
 
     # player_info['TaskPotential_Factor_5_CurrentWindow'] = TaskPotential_Factor_5_CurrentWindow
     if 'TaskPotential_Factor_5_list' not in player_info:
@@ -354,7 +364,9 @@ def update_medic_180(player_info, current_window):
     TaskPotential_StateAverage_CurrentWindow = seq_3_result['TaskPotential_StateAverage_CurrentWindow']
     TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
     TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)
-
+    print('StateAverage_CurrentWindow', TaskPotential_StateAverage_CurrentWindow)
+    print('StateAverage_LastWindow', TaskPotential_StateAverage_LastWindow)
+    print('StateAverage_List', TaskPotential_StateAverages_List)
     # seq 4
     seq_4_result = do_step_3_seq_4(current_window,
                                    player_info,
@@ -363,6 +375,9 @@ def update_medic_180(player_info, current_window):
                                    Medic_TaskPotential_RecategorizationThresholds_High_List,
                                    Medic_TaskPotential_RecategorizationThresholds_Low_List
                                    )
+
+    print('Medic_Recat_High_List', Medic_TaskPotential_RecategorizationThresholds_High_List)
+    print('Medic_Recat_Low_List', Medic_TaskPotential_RecategorizationThresholds_Low_List)
     print('seq_4_result')
     pprint(seq_4_result)
     TaskPotential_Categorization_CurrentWindow = seq_4_result['TaskPotential_Categorization_CurrentWindow']
@@ -401,10 +416,14 @@ def update_engg_180(player_info, current_window):
                                                                          Engineer_RubbleDestroyed_Count_UpperThreshold_List,
                                                                          Engineer_RubbleDestroyed_Count_LowerThreshold_List)
 
+    print('Engineer_Factor_1_RubbleDestroyed', Engineer_RubbleDestroyed_Count_CurrentWindow)
+
     TaskPotential_Factor_2_CurrentWindow = compute_task_potential_factor(current_window,
                                                                          Engineer_RubbleDestroyed_to_Movement_ratio_CurrentWindow,
                                                                          Engineer_RubbleDestroyed_to_MovementRatio_UpperThreshold_List,
                                                                          Engineer_RubbleDestroyed_to_MovementRatio_LowerThreshold_List)
+
+    print('Engineer_Factor_2_RubbleDestroyedToMovement', Engineer_RubbleDestroyed_to_Movement_ratio_CurrentWindow)
 
     TaskPotential_Factor_3_CurrentWindow = 0
     if Transport_Distance_Average_CurrentWindow > 0:
@@ -412,16 +431,23 @@ def update_engg_180(player_info, current_window):
                                                                              100 / Transport_Distance_Average_CurrentWindow,
                                                                              Engineer_Transport_Distance_Average_UpperThreshold_List,
                                                                              Engineer_Transport_Distance_Average_LowerThreshold_List)
+        print('Engineer_Factor_3_InvertedTransportAVG', 100 / Transport_Distance_Average_CurrentWindow)
 
     TaskPotential_Factor_4_CurrentWindow = compute_task_potential_factor(current_window,
                                                                          Transports_Completed_Count_CurrentWindow,
                                                                          Engineer_Transports_Completed_Count_UpperThreshold_List,
                                                                          Engineer_Transports_Completed_Count_LowerThreshold_List)
 
+    print('Engineer_Factor_4_TransportsCompleted', Transports_Completed_Count_CurrentWindow)
+
     TaskPotential_Factor_5_CurrentWindow = compute_task_potential_factor(current_window,
                                                                          Engineer_Rubble_to_Transports_ratio_CurrentWindow,
                                                                          Engineer_Rubble_to_Transports_ratio_UpperThreshold_List,
                                                                          Engineer_Rubble_to_Transports_ratio_LowerThreshold_List)
+
+    if Engineer_Rubble_to_Transports_ratio_CurrentWindow > 0:
+        print('Engineer_Factor_5_RubbleToTransports', Engineer_Rubble_to_Transports_ratio_CurrentWindow)
+
     # seq 3
     TaskPotential_Factors_CurrentWindow = [TaskPotential_Factor_1_CurrentWindow,
                                            TaskPotential_Factor_2_CurrentWindow,
@@ -433,6 +459,7 @@ def update_engg_180(player_info, current_window):
                           Engineer_FactorCoefficient_3,
                           Engineer_FactorCoefficient_4,
                           Engineer_FactorCoefficient_5]
+
     TaskPotential_Factors_List = player_info['TaskPotential_Factors_List']
     TaskPotential_Factors_List.append(TaskPotential_Factors_CurrentWindow)
     TaskPotential_StateAverage_LastWindow = player_info['TaskPotential_StateAverage_LastWindow']
@@ -440,6 +467,10 @@ def update_engg_180(player_info, current_window):
     TaskPotential_StateAverage_CurrentWindow = seq_3_result['TaskPotential_StateAverage_CurrentWindow']
     TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
     TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)
+
+    print('StateAverage_CurrentWindow', TaskPotential_StateAverage_CurrentWindow)
+    print('StateAverage_LastWindow', TaskPotential_StateAverage_LastWindow)
+    print('StateAverage_List', TaskPotential_StateAverages_List)
 
     # seq 4
     seq_4_result = do_step_3_seq_4(current_window,
@@ -449,6 +480,11 @@ def update_engg_180(player_info, current_window):
                                    Engineer_TaskPotential_RecategorizationThresholds_High_List,
                                    Engineer_TaskPotential_RecategorizationThresholds_Low_List
                                    )
+
+    print('Engineer_Recat_High_List', Engineer_TaskPotential_RecategorizationThresholds_High_List)
+    print('Engineer_Recat_Low_List', Engineer_TaskPotential_RecategorizationThresholds_Low_List)
+    print('seq_4_result')
+    pprint(seq_4_result)
     TaskPotential_Categorization_CurrentWindow = seq_4_result['TaskPotential_Categorization_CurrentWindow']
     TaskPotential_Changed = seq_4_result['TaskPotential_Changed']
     TeamPotential_Category = player_info['TeamPotential_Category']
@@ -477,12 +513,12 @@ def update_transporter_180(player_info, current_window):
     if Transporter_Evacuations_Count_CurrentWindow > 0:
         Transporter_Transport_to_Evacuation_ratio_CurrentWindow = Transports_Completed_Count_CurrentWindow / Transporter_Evacuations_Count_CurrentWindow
 
-    print('Transport_Distances_CurrentWindow_List', player_info['Transport_Distances_CurrentWindow_List'])
-    print('Transport_Distance_Average_CurrentWindow', Transport_Distance_Average_CurrentWindow)
+    # print('Transport_Distances_CurrentWindow_List', player_info['Transport_Distances_CurrentWindow_List'])
+    # print('Transport_Distance_Average_CurrentWindow', Transport_Distance_Average_CurrentWindow)
 
-    print('Transports_Completed_Count_CurrentWindow', Transports_Completed_Count_CurrentWindow)
-    print('Transporter_Evacuations_Count_CurrentWindow', Transporter_Evacuations_Count_CurrentWindow)
-    print('Transport_Distance_Average_CurrentWindow', Transport_Distance_Average_CurrentWindow)
+    # print('Transports_Completed_Count_CurrentWindow', Transports_Completed_Count_CurrentWindow)
+    # print('Transporter_Evacuations_Count_CurrentWindow', Transporter_Evacuations_Count_CurrentWindow)
+    # print('Transport_Distance_Average_CurrentWindow', Transport_Distance_Average_CurrentWindow)
     # seq 2
     Transporter_Evacuations_Regular_Count_CurrentWindow = player_info[
         'Transporter_Evacuations_Regular_Count_CurrentWindow']
@@ -491,6 +527,8 @@ def update_transporter_180(player_info, current_window):
                                                                          Transporter_Evacuations_Regular_Count_UpperThreshold_List,
                                                                          Transporter_Evacuations_Regular_Count_LowerThreshold_List)
 
+    print('Transporter_Factor_1_EvacuateRegular', Transporter_Evacuations_Regular_Count_CurrentWindow)
+
     Transporter_Evacuations_Critical_Count_CurrentWindow = player_info[
         'Transporter_Evacuations_Critical_Count_CurrentWindow']
     TaskPotential_Factor_2_CurrentWindow = compute_task_potential_factor(current_window,
@@ -498,20 +536,30 @@ def update_transporter_180(player_info, current_window):
                                                                          Transporter_Evacuations_Critical_Count_UpperThreshold_List,
                                                                          Transporter_Evacuations_Critical_Count_LowerThreshold_List)
 
+    print('Transporter_Factor_2_EvacuateCritical', Transporter_Evacuations_Critical_Count_CurrentWindow)
+
     TaskPotential_Factor_3_CurrentWindow = compute_task_potential_factor(current_window,
                                                                          Transport_Distance_Average_CurrentWindow / 100,
                                                                          Transporter_Transport_Distance_Average_UpperThreshold_List,
                                                                          Transporter_Transport_Distance_Average_LowerThreshold_List)
+
+    if Transport_Distance_Average_CurrentWindow / 100 > 0:
+        print('Transporter_Factor_3_TransportDistanceAVG', Transport_Distance_Average_CurrentWindow / 100)
 
     TaskPotential_Factor_4_CurrentWindow = compute_task_potential_factor(current_window,
                                                                          Transports_Completed_Count_CurrentWindow,
                                                                          Transporter_Transports_Completed_Count_UpperThreshold_List,
                                                                          Transporter_Transports_Completed_Count_LowerThreshold_List)
 
+    print('Transporter_Factor_4_Transports', Transports_Completed_Count_CurrentWindow)
+
     TaskPotential_Factor_5_CurrentWindow = compute_task_potential_factor(current_window,
                                                                          Transporter_Transport_to_Evacuation_ratio_CurrentWindow,
                                                                          Transporter_Transport_to_Evacuation_ratio_UpperThreshold_List,
                                                                          Transporter_Transport_to_Evacuation_ratio_LowerThreshold_List)
+
+    if Transporter_Transport_to_Evacuation_ratio_CurrentWindow > 0:
+        print('Transporter_Factor_5_TransportToEvacuate', Transporter_Transport_to_Evacuation_ratio_CurrentWindow)
 
     # seq 3
     TaskPotential_Factors_CurrentWindow = [TaskPotential_Factor_1_CurrentWindow,
@@ -532,6 +580,10 @@ def update_transporter_180(player_info, current_window):
     TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
     TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)
 
+    print('StateAverage_CurrentWindow', TaskPotential_StateAverage_CurrentWindow)
+    print('StateAverage_LastWindow', TaskPotential_StateAverage_LastWindow)
+    print('StateAverage_List', TaskPotential_StateAverages_List)
+
     # seq 4
     seq_4_result = do_step_3_seq_4(current_window,
                                    player_info,
@@ -540,6 +592,12 @@ def update_transporter_180(player_info, current_window):
                                    Transporter_TaskPotential_RecategorizationThresholds_High_List,
                                    Transporter_TaskPotential_RecategorizationThresholds_Low_List
                                    )
+
+    print('Transporter_Recat_High_List', Transporter_TaskPotential_RecategorizationThresholds_High_List)
+    print('Transporter_Recat_Low_List', Transporter_TaskPotential_RecategorizationThresholds_Low_List)
+    print('seq_4_result')
+    pprint(seq_4_result)
+
     TaskPotential_Categorization_CurrentWindow = seq_4_result['TaskPotential_Categorization_CurrentWindow']
     TaskPotential_Changed = seq_4_result['TaskPotential_Changed']
     TeamPotential_Category = player_info['TeamPotential_Category']
@@ -564,7 +622,7 @@ def reset_vars_step_3_seq_5(player_info):
                 player_info[var] = 0
             if isinstance(val, list):
                 player_info[var] = []
-            print(f'set {var}: {val} => {player_info[var]}')
+            # print(f'set {var}: {val} => {player_info[var]}')
         else:
             print('Check: timeout 180 reset var not in player_info')
 
