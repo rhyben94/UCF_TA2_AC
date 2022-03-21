@@ -423,7 +423,8 @@ def update_engg_180(player_info, current_window):
                                                                          Engineer_RubbleDestroyed_to_MovementRatio_UpperThreshold_List,
                                                                          Engineer_RubbleDestroyed_to_MovementRatio_LowerThreshold_List)
 
-    print('Engineer_Factor_2_RubbleDestroyedToMovement', Engineer_RubbleDestroyed_to_Movement_ratio_CurrentWindow)
+    if Engineer_RubbleDestroyed_to_Movement_ratio_CurrentWindow > 0:
+        print('Engineer_Factor_2_RubbleDestroyedToMovement', Engineer_RubbleDestroyed_to_Movement_ratio_CurrentWindow)
 
     TaskPotential_Factor_3_CurrentWindow = 0
     if Transport_Distance_Average_CurrentWindow > 0:
