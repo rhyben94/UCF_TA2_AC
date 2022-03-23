@@ -380,8 +380,13 @@ class PlayerState:
                 }
 
     def handle_survey_values(self, vals, exp_id, trial_id):
+        survey_name = vals['surveyname']
+        if not survey_name.startswith('Section0_IntakeSurvey_'):
+            print(f'Not handling survey: {survey_name}')
+            return {'player_profile': None}
+
         participant_id = vals['participantid']
-        print('\nsurvey for participant', participant_id)
+        print(f'\nGot survey: {survey_name} for participant: {participant_id}')
         if participant_id not in self.players:
             print('Error: handle_survey_values participant_id not found:', participant_id)
             pprint(vals)
@@ -397,7 +402,7 @@ class PlayerState:
         have_all = self.have_all_qids(participant_id)
 
         player_profile = None
-        if collected and have_all:
+        if have_all:
             print('Compute and publish player profile message')
             player_profile = self.compute_player_profile(participant_id)
             print('Publish Player Profile')
