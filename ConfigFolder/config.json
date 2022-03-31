@@ -19,8 +19,9 @@
             {"topic": "observations/events/player/rubble_destroyed"},
             {"topic":  "observations/events/server/victim_evacuated"},
             {"topic":  "observations/events/player/victim_picked_up"},
-            {"topic":  "observations/events/server/victim_placed"},
-            {"topic":  "observations/state", "sub_type":  "state"}
+            {"topic":  "observations/events/player/victim_placed"},
+            {"topic":  "observations/state", "sub_type":  "state"},
+            {"topic":  "observations/events/mission/planning"}
         ]
     }
 }
