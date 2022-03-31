@@ -18,7 +18,7 @@ __author__ = 'rcarff'
 
 
 def handle_trial_start(dat, exp_id, trial_id):
-    PlayerModel.playerstate.handle_trial_start(dat['client_info'], exp_id, trial_id)
+    PlayerModel.playerstate.handle_trial_start(dat, exp_id, trial_id)
 
 
 def send_message(player_profile, trial_id):
@@ -26,8 +26,10 @@ def send_message(player_profile, trial_id):
     msg_type = 'agent'
     sub_type = 'playerprofile'
     sub_type_version = 0.1
-    print('publishing player profile', player_profile)
+    print('send_message publishing player profile')
+    pprint(player_profile)
     helper.send_msg(topic, msg_type, sub_type, sub_type_version, data=player_profile, trial_key=trial_id)
+
 
 def handle_survey_message(dat, exp_id, trial_id):
     x = PlayerModel.playerstate.handle_survey_values(dat['values'], exp_id, trial_id)
@@ -35,8 +37,9 @@ def handle_survey_message(dat, exp_id, trial_id):
     # collected = x['collected']
     # have_all = x['have_all']
     if player_profile:
+        print(f'handle_survey_message publishing player profile')
         send_message(player_profile, trial_id)
-        PlayerModel.playerstate.handle_player_profile(player_profile)
+        PlayerModel.playerstate.handle_static_player_profile(player_profile)
 
 
 def update_time(dat, trial_id):
@@ -58,11 +61,13 @@ def check_and_handle_180_timeout(trial_id):
                 print('for participant_id', pid)
                 pprint(p['update_180'])
                 print()
-                player_profile = PlayerModel.make_player_profile_message(pid, p)
-                print('publishing player_profile')
-                pprint(player_profile)
+                PlayerModel.playerstate.set_dynamic_profile(pid, p)
+                player_profile = PlayerModel.make_dynamic_player_profile_message(pid, p)
+                print('check_and_handle_180_timeout publishing dynamic player_profile')
+                # pprint(player_profile)
                 send_message(player_profile, trial_id)
         print()
+
 
 # This is the function which is called when a message is received for a to
 # topic which this Agent is subscribed to.
@@ -85,9 +90,15 @@ def on_message(topic, header, msg, data, mqtt_message):
     # Now handle the message based on the topic.  Refer to Message Specs for the contents of header, msg, and data
     if topic == 'trial' and sub_type == 'start':
         # handle the start of a trial!!
-        logger.info("Received a message on the topic: " + topic)
-        logger.info(" - Trial Started with Mission set to: " + data['experiment_mission'])
+        print("Received a message on the topic: " + topic)
+        print(" - Trial Started with Mission set to: " + data['experiment_mission'])
         handle_trial_start(data, exp_id, trial_id)
+
+    if topic == 'trial' and sub_type == 'stop':
+        # handle the stop of a trial!!
+        print("Received a message on the topic: " + topic)
+        print(" - Trial Stopped with Mission set to: " + data['experiment_mission'])
+        PlayerModel.playerstate.handle_trial_stop(data, exp_id, trial_id, '/tmp/agent_players.txt')
 
     if sub_type == 'Status:SurveyResponse':
         # logger.info("Received a message on the topic: " + topic)
@@ -118,6 +129,9 @@ def on_message(topic, header, msg, data, mqtt_message):
 
     if message_type == 'observation' and sub_type == 'state':
         PlayerModel.playerstate.handle_obs_state(data, exp_id, trial_id)
+
+    if sub_type == 'Event:PlanningStage':
+        PlayerModel.playerstate.handle_planning_event(data, exp_id, trial_id)
 
     #
     #     # build up the message's data and publish it

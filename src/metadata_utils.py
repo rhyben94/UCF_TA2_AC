@@ -10,10 +10,11 @@ import json
 import os
 from dateutil.parser import parse
 from pprint import pprint
+from pprint import pformat
 
 
 def read_file(fname, sort=True):
-    with open(fname, "r",  encoding="utf-8") as f:
+    with open(fname, "r", encoding="utf-8") as f:
         messages = []
         for line in f:
             jline = None
@@ -45,6 +46,18 @@ def write_file(fname, messages):
     with open(fname, 'w') as f:
         for m in messages:
             f.write(json.dumps(m) + os.linesep)
+
+
+def write_json(jsn, fname):
+    with open(fname, 'w') as fp:
+        json.dump(jsn, fp, sort_keys=True, indent=True)
+
+
+def write_to_file(obj, fname):
+    str = pformat(obj)
+    text_file = open(fname, "w")
+    text_file.write(str)
+    text_file.close()
 
 
 def dateutil_time_to_millis_since_epoch(x):

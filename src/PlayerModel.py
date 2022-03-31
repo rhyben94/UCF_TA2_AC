@@ -6,7 +6,7 @@ from pprint import pprint
 import PlayerProfiler_Draft as player_profiler
 import PlayerModelDynamic  as player_dynamic
 import csv
-
+import metadata_utils
 # player = {'sbsod': [f'SBSOD_{x}' for x in range(1, 16)]}
 # vgem = {f'VGEM_{x}': 'QID8_' for x in range(1, 16)}
 # pprint(vgem)
@@ -258,7 +258,7 @@ def get_required_qids():
     return qid_set
 
 
-def make_player_profile_message(participant_id, player_info):
+def make_dynamic_player_profile_message(participant_id, player_info):
     # print(f'participant_id {participant_id}')
     # pprint(player_info)
     team_cat = player_info['TeamPotential_Category']
@@ -283,23 +283,39 @@ def make_player_profile_message(participant_id, player_info):
 class PlayerState:
     def __init__(self):
         self.players = {}
+        self.map_name = ''
         self.req_qid_set = get_required_qids()
         self.elapsed_time = -1  # -1 implies mission ended
         self.last_factor_window = 0
+        self.planning_time = 120 * 1000  # first 2 minutes is planning time
         # print('QID set', len(self.req_qid_set))
 
     def check_180_timeout(self):
         ret_data = False
-        current_factor_window = (int)(self.elapsed_time / factor_windows)
+
+        if self.is_training_mission():
+            # print(f'training mission {self.elapsed_time % (180 * 1000)}')
+            if self.elapsed_time % (180 * 1000) == 0:
+                print(f'Training mission {self.map_name}. Not doing 180 timeout at {self.elapsed_time}')
+            return ret_data
+
+        if self.elapsed_time <= self.planning_time:
+            if self.elapsed_time % (10 * 1000) == 0:
+                print(f'Planning time at {self.elapsed_time}. Not doing 180 timeout')
+            return ret_data
+
+        since_mission_start = self.elapsed_time - self.planning_time
+        current_factor_window = (int)(since_mission_start / factor_windows)
         if current_factor_window > self.last_factor_window:
+            in_minutes = (int)(self.elapsed_time / 60000)
             print(
-                f'check_180_timeout timeout {self.last_factor_window} => {current_factor_window} @time {self.elapsed_time}')
+                f'check_180_timeout timeout {self.last_factor_window} => {current_factor_window} @time {self.elapsed_time} {in_minutes} min')
             ret_data = True
         self.last_factor_window = current_factor_window
         return ret_data
 
     def handle_180_timeout(self):
-        print(f'handle_180_timeout count {self.last_factor_window}')
+        print(f'handle_180_timeout count {self.last_factor_window} at {self.elapsed_time}')
         my_adjusted_factor = self.last_factor_window - index_adjustment_180
         if 0 <= my_adjusted_factor < player_dynamic.max_index_180_timeout:
             player_dynamic.handle_180_sec_timeout(self.players.values(), my_adjusted_factor)
@@ -321,7 +337,23 @@ class PlayerState:
             print(f'Elapsed time not updated. prev {self.elapsed_time} => {elapsed_ms} {delta}')
         return False
 
-    def handle_trial_start(self, client_info, exp_id, trial_id):
+    def handle_trial_stop(self, dat, exp_id, trial_id, fname):
+        print(f'--- Trial stop: {trial_id}')
+        if self.elapsed_time != -1:
+            print(f'WARN: Trial stop: {trial_id} elapsed_time is {self.elapsed_time}. Missing Event:MissionStop ')
+            self.elapsed_time = -1  # force if we have not received mission stop
+        # hack
+        # metadata_utils.write_json(self.players, fname)
+        metadata_utils.write_to_file(self.players, fname)
+
+    def handle_trial_start(self, dat, exp_id, trial_id):
+        if self.elapsed_time != -1:
+            print(f'WARN: Trial start: {trial_id} elapsed_time is {self.elapsed_time}. Resetting to -1 ')
+            self.elapsed_time = -1
+
+        print(f'--- Trial start: {trial_id} elapsed ms {self.elapsed_time}')
+        client_info = dat['client_info']
+        self.map_name = dat['map_name']
         print('Trial Start client info')
         pprint(client_info)
         for ci in client_info:
@@ -352,6 +384,7 @@ class PlayerState:
         return {'experiment_id': exp_id,
                 'trials': [trial_id],
                 'qid': {},
+                'dynamic_profile': None,
                 'Motion_CurrentWindow': 0,
                 'Transport_Current_DistanceTranslated': 0,
                 'IsTransporting': False,
@@ -381,12 +414,18 @@ class PlayerState:
 
     def handle_survey_values(self, vals, exp_id, trial_id):
         survey_name = vals['surveyname']
-        if not survey_name.startswith('Section0_IntakeSurvey_'):
+        if not self.is_intake_survey(survey_name):
             print(f'Not handling survey: {survey_name}')
             return {'player_profile': None}
 
         participant_id = vals['participantid']
         print(f'\nGot survey: {survey_name} for participant: {participant_id}')
+        dy_player_info = self.players[participant_id]['dynamic_profile']
+        if dy_player_info:
+            print(f'Found dynamic player profile {participant_id}')
+            player_profile = make_dynamic_player_profile_message(participant_id, dy_player_info)
+            return {'collected': False, 'have_all': True, 'player_profile': player_profile}
+
         if participant_id not in self.players:
             print('Error: handle_survey_values participant_id not found:', participant_id)
             pprint(vals)
@@ -403,10 +442,10 @@ class PlayerState:
 
         player_profile = None
         if have_all:
-            print('Compute and publish player profile message')
+            print('Compute static player profile')
             player_profile = self.compute_player_profile(participant_id)
-            print('Publish Player Profile')
-            pprint(player_profile)
+            # print('Static Player Profile')
+            # pprint(player_profile)
         else:
             print('not new data or enough data \n\tcollected any:', collected, '\n\thave all qid vals:', have_all)
         print()
@@ -431,13 +470,18 @@ class PlayerState:
             pprint(added)
         return all_qid
 
-    def handle_player_profile(self, player_profile):
+    def handle_static_player_profile(self, player_profile):
         # pprint(player_profile)
         pid = player_profile['participant_id']
         if pid not in self.players:
             print(f'Error: handle_player_profile got {pid} but not found in players')
             pprint(player_profile)
             return
+        if playerstate.have_dynamic_profile(pid):
+            print(
+                f'PlayerModel.playerstate have dynamic profile: {playerstate.have_dynamic_profile(pid)}. No need to create again from static profile')
+            return
+        print('Creating dynamic player profile from static profile')
         player_dynamic.init_from_player_profile(self.players[pid], player_profile)
 
     def handle_event_triage(self, dat, exp_id, trial_id):
@@ -567,6 +611,31 @@ class PlayerState:
         elapsed = dat['elapsed_milliseconds']
         print(f'Mission State {state} Elapsed ms {self.elapsed_time} => {elapsed}')
         self.elapsed_time = elapsed  # -1 implies mission ended
+
+    def handle_planning_event(self, dat, exp_id, trial_id):
+        state = dat['state']
+        elapsed_ms = dat['elapsed_milliseconds']
+        print(f'handle_planning_event {state} {elapsed_ms}')
+        if state == 'Stop':
+            self.planning_time = elapsed_ms
+
+    def set_dynamic_profile(self, pid, player_profile):
+        self.players[pid]['dynamic_profile'] = player_profile
+
+    def get_dynamic_profile(self, pid):
+        return self.players[pid]['dynamic_profile']
+
+    def have_dynamic_profile(self, pid):
+        if pid not in self.players:
+            print(f'Player id not found: {pid}')
+            return False
+        return self.players[pid]['dynamic_profile'] != None
+
+    def is_intake_survey(self, survey_name):
+        return 'IntakeSurvey' in survey_name
+
+    def is_training_mission(self):
+        return 'training' in self.map_name.lower()
 
 
 playerstate = PlayerState()

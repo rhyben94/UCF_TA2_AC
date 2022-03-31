@@ -37,12 +37,20 @@ def process_metadata_file(fname):
                 PlayerModel.playerstate.handle_180_timeout()
                 for pid, p in PlayerModel.playerstate.players.items():
                     if 'update_180' in p:
+                        PlayerModel.playerstate.set_dynamic_profile(pid, p)
                         print('for participant_id', pid)
                         pprint(p['update_180'])
 
         if message_type == 'trial' and sub_type == 'start':
             # pprint(m)
-            PlayerModel.playerstate.handle_trial_start(dat['client_info'], exp_id, trial_id)
+            PlayerModel.playerstate.handle_trial_start(dat, exp_id, trial_id)
+
+        if message_type == 'trial' and sub_type == 'stop':
+            # pprint(m)
+            PlayerModel.playerstate.handle_trial_stop(dat, exp_id, trial_id, '/tmp/with_file_players.txt')
+
+        if sub_type == 'Event:PlanningStage':
+            PlayerModel.playerstate.handle_planning_event(dat, exp_id, trial_id)
 
         if sub_type == 'Status:SurveyResponse':
             vals = PlayerModel.playerstate.handle_survey_values(dat['values'],
@@ -50,7 +58,9 @@ def process_metadata_file(fname):
             # pprint(vals)
             pp = vals['player_profile']
             if pp:
-                PlayerModel.playerstate.handle_player_profile(pp)
+                PlayerModel.playerstate.handle_static_player_profile(pp)
+                print('with metadata publishing static player profile')
+                pprint(pp)
 
         if sub_type == 'Event:MissionState':
             PlayerModel.playerstate.handle_mission_state(dat)
