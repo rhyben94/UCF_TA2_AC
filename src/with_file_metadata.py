@@ -47,7 +47,7 @@ def process_metadata_file(fname):
 
         if message_type == 'trial' and sub_type == 'stop':
             # pprint(m)
-            PlayerModel.playerstate.handle_trial_stop(dat, exp_id, trial_id, '/tmp/with_file_players.txt')
+            PlayerModel.playerstate.handle_trial_stop(dat, exp_id, trial_id, 'with_file_players.txt')
 
         if sub_type == 'Event:PlanningStage':
             PlayerModel.playerstate.handle_planning_event(dat, exp_id, trial_id)

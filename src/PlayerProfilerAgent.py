@@ -98,7 +98,8 @@ def on_message(topic, header, msg, data, mqtt_message):
         # handle the stop of a trial!!
         print("Received a message on the topic: " + topic)
         print(" - Trial Stopped with Mission set to: " + data['experiment_mission'])
-        PlayerModel.playerstate.handle_trial_stop(data, exp_id, trial_id, '/tmp/agent_players.txt')
+        # FIXME for docker
+        PlayerModel.playerstate.handle_trial_stop(data, exp_id, trial_id, 'agent_players.txt')
 
     if sub_type == 'Status:SurveyResponse':
         # logger.info("Received a message on the topic: " + topic)
