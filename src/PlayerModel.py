@@ -7,6 +7,7 @@ import PlayerProfiler_Draft as player_profiler
 import PlayerModelDynamic  as player_dynamic
 import csv
 import metadata_utils
+
 # player = {'sbsod': [f'SBSOD_{x}' for x in range(1, 16)]}
 # vgem = {f'VGEM_{x}': 'QID8_' for x in range(1, 16)}
 # pprint(vgem)
@@ -314,10 +315,27 @@ class PlayerState:
         self.last_factor_window = current_factor_window
         return ret_data
 
+    def check_static_profile_and_add(self):
+        for pid, player_info in self.players.items():
+            static_p = player_dynamic.have_static_profile(pid, player_info)
+            print(f'Player {pid} has static profile {static_p}')
+            if not static_p:
+                player_profile = self.make_default_static_profile(pid)
+                self.handle_static_player_profile(player_profile)
+
+    def make_default_static_profile(self, pid):
+        added_defaults = self.add_default_qid_vals({})
+        collected = self.collect_qid_vals(pid, added_defaults)
+        have_all = self.have_all_qids(pid)
+        print(f'Default static profile for {pid}')
+        player_profile = self.compute_player_profile(pid)
+        return player_profile
+
     def handle_180_timeout(self):
         print(f'handle_180_timeout count {self.last_factor_window} at {self.elapsed_time}')
         my_adjusted_factor = self.last_factor_window - index_adjustment_180
         if 0 <= my_adjusted_factor < player_dynamic.max_index_180_timeout:
+            self.check_static_profile_and_add()
             player_dynamic.handle_180_sec_timeout(self.players.values(), my_adjusted_factor)
         else:
             print(
@@ -379,6 +397,7 @@ class PlayerState:
                 if old != role:
                     print(f'Player {participant_id} role changed: {old} -> {role}')
             self.players[participant_id]['role'] = role
+            player_dynamic.have_static_profile(participant_id, self.players[participant_id])
 
     def make_new_player(self, exp_id, trial_id):
         return {'experiment_id': exp_id,

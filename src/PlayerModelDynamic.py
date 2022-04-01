@@ -67,7 +67,7 @@ Engineer_RubbleDestroyed_to_MovementRatio_LowerThreshold_List = [.02, .02, .02, 
 Engineer_Transport_Distance_Average_UpperThreshold_List = [6, 6, 6, 6, 6]
 Engineer_Transport_Distance_Average_LowerThreshold_List = [3, 3, 3, 3, 3]
 
-Engineer_Transports_Completed_Count_UpperThreshold_List = [ 3, 3, 4, 4, 4]
+Engineer_Transports_Completed_Count_UpperThreshold_List = [3, 3, 4, 4, 4]
 Engineer_Transports_Completed_Count_LowerThreshold_List = [2, 2, 2, 2, 2]
 
 Engineer_Rubble_to_Transports_ratio_UpperThreshold_List = [5.5, 5.5, 5.5, 5.5, 5.5]
@@ -118,6 +118,19 @@ def compute_state_average_current_window(task_potential_factors_list_cw,
           task_potential_factors_list_cw[4] * factor_coef_5
     den = factor_coef_1 + factor_coef_2 + factor_coef_3 + factor_coef_4 + factor_coef_5
     return num / den
+
+
+def have_static_profile(pid, player_info):
+    # print('have_static_profile')
+    # pprint(player_info)
+    keys_check = ['TaskPotential_Start', 'TeamPotential_Category', 'TaskPotential_Categorization_LastWindow',
+                  'TaskPotential_BaseModifier']
+    for x in keys_check:
+        if x in player_info:
+            print(f'Player {pid} has {x} -> {player_info[x]}')
+        else:
+            print(f'Player {pid} does not has {x}')
+    return 'TaskPotential_Start' in player_info
 
 
 # Step 2 functions
@@ -236,6 +249,7 @@ def do_step_3_seq_3(TaskPotential_Factors_CurrentWindow,
     TaskPotential_StateAverage_Delta = TaskPotential_StateAverage_CurrentWindow - TaskPotential_StateAverage_LastWindow
     return {'TaskPotential_StateAverage_CurrentWindow': TaskPotential_StateAverage_CurrentWindow}
 
+
 def do_step_3_seq_4(current_window,
                     player_info,
                     TaskPotential_StateAverages_List,
@@ -261,6 +275,7 @@ def do_step_3_seq_4(current_window,
     return {'TaskPotential_Changed': TaskPotential_Changed,
             'TaskPotential_Categorization_CurrentWindow': TaskPotential_Categorization_CurrentWindow
             }
+
 
 def update_medic_180(player_info, current_window):
     print(f'update medic 180 index: {current_window}')
@@ -289,7 +304,7 @@ def update_medic_180(player_info, current_window):
                                                                          Medic_TriageSuccessful_Count_CurrentWindow,
                                                                          Medic_TriageSuccessful_UpperThreshold_List,
                                                                          Medic_TriageSuccessful_LowerThreshold_List)
-    print('Medic_Factor_1_TriageCount' , Medic_TriageSuccessful_Count_CurrentWindow)
+    print('Medic_Factor_1_TriageCount', Medic_TriageSuccessful_Count_CurrentWindow)
 
     # player_info['TaskPotential_Factor_1_CurrentWindow'] = TaskPotential_Factor_1_CurrentWindow
     if 'TaskPotential_Factor_1_list' not in player_info:
@@ -360,7 +375,8 @@ def update_medic_180(player_info, current_window):
     TaskPotential_Factors_List = player_info['TaskPotential_Factors_List']
     TaskPotential_Factors_List.append(TaskPotential_Factors_CurrentWindow)
     TaskPotential_StateAverage_LastWindow = player_info['TaskPotential_StateAverage_LastWindow']
-    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients, TaskPotential_StateAverage_LastWindow)
+    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients,
+                                   TaskPotential_StateAverage_LastWindow)
     TaskPotential_StateAverage_CurrentWindow = seq_3_result['TaskPotential_StateAverage_CurrentWindow']
     TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
     TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)
@@ -393,6 +409,7 @@ def update_medic_180(player_info, current_window):
             'TaskPotential_StateAverages_List': TaskPotential_StateAverages_List,
             'TaskPotential_Factors_List': TaskPotential_Factors_List
             }
+
 
 def update_engg_180(player_info, current_window):
     print(f'update engg 180 index: {current_window}')
@@ -464,7 +481,8 @@ def update_engg_180(player_info, current_window):
     TaskPotential_Factors_List = player_info['TaskPotential_Factors_List']
     TaskPotential_Factors_List.append(TaskPotential_Factors_CurrentWindow)
     TaskPotential_StateAverage_LastWindow = player_info['TaskPotential_StateAverage_LastWindow']
-    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients, TaskPotential_StateAverage_LastWindow)
+    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients,
+                                   TaskPotential_StateAverage_LastWindow)
     TaskPotential_StateAverage_CurrentWindow = seq_3_result['TaskPotential_StateAverage_CurrentWindow']
     TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
     TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)
@@ -499,6 +517,7 @@ def update_engg_180(player_info, current_window):
             'TaskPotential_StateAverages_List': TaskPotential_StateAverages_List,
             'TaskPotential_Factors_List': TaskPotential_Factors_List
             }
+
 
 # TODO print to stdout, vars in seq 1 and seq 2
 def update_transporter_180(player_info, current_window):
@@ -576,7 +595,8 @@ def update_transporter_180(player_info, current_window):
     TaskPotential_Factors_List = player_info['TaskPotential_Factors_List']
     TaskPotential_Factors_List.append(TaskPotential_Factors_CurrentWindow)
     TaskPotential_StateAverage_LastWindow = player_info['TaskPotential_StateAverage_LastWindow']
-    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients, TaskPotential_StateAverage_LastWindow)
+    seq_3_result = do_step_3_seq_3(TaskPotential_Factors_CurrentWindow, FactorCoefficients,
+                                   TaskPotential_StateAverage_LastWindow)
     TaskPotential_StateAverage_CurrentWindow = seq_3_result['TaskPotential_StateAverage_CurrentWindow']
     TaskPotential_StateAverages_List = player_info['TaskPotential_StateAverages_List']
     TaskPotential_StateAverages_List.append(TaskPotential_StateAverage_CurrentWindow)

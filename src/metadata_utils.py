@@ -6,7 +6,7 @@
 
 import argparse
 import json
-
+import copy
 import os
 from dateutil.parser import parse
 from pprint import pprint
@@ -54,7 +54,11 @@ def write_json(jsn, fname):
 
 
 def write_to_file(obj, fname):
-    str = pformat(obj)
+    copied = copy.deepcopy(obj) #obj.copy()
+    for pid, val in copied.items():
+        if 'dynamic_profile' in val:
+            del val['dynamic_profile']
+    str = pformat(copied)
     text_file = open(fname, "w")
     text_file.write(str)
     text_file.close()
