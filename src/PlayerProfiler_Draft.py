@@ -7,9 +7,9 @@ Player_role = "Medic"
 SBSOD_MedianCutoff = 4.933
 VGEM_MinecraftUSAR_MedianCutoff = 77.93
 Competency_MedianCutoff = 90000
-PsychologicalCollectivism_MedianCutoff = 59
+PsychologicalCollectivism_MedianCutoff = 3.933
 RMET_MedianCutoff = 27
-SociableDominance_MedianCutoff = 46
+SociableDominance_MedianCutoff = 3.066
 
 TaskPotential_MustBeHighIn = 1
 TeamPotential_MustBeHighIn = 1
