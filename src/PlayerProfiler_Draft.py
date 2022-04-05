@@ -812,7 +812,7 @@ def compute_player_profile(sbsod_score, vgem_score,
         VGEM_MinecraftUSAR_MedianSplit_Score = 0
     print("VGEM_MinecraftUSAR_MedianSplit_Score: ", VGEM_MinecraftUSAR_MedianSplit_Score)
 
-    if Competency_Score > Competency_MedianCutoff:
+    if Competency_Score < Competency_MedianCutoff:
         Competency_MedianSplit_Score = 1
     else:
         Competency_MedianSplit_Score = 0
