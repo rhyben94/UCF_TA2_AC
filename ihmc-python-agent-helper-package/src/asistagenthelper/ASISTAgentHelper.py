@@ -14,6 +14,7 @@ import uuid
 import logging
 import threading
 from datetime import datetime
+from dateutil.parser import parse
 from .RawConnection import RawConnection, RawMessage
 
 __author__ = 'rcarff'
@@ -80,11 +81,15 @@ class ASISTAgentHelper(object):
         # start the MQTT bus pub/sub system
         self.__connected_to_mqtt = False
         self.__trial_infos = {}
-        self.__message_bus = RawConnection(self.agent_name+":"+str(uuid.uuid4()))
+        self.__message_bus = RawConnection(self.agent_name + ":" + str(uuid.uuid4()))
         self.__message_bus.onConnectionStateChange = self.__on_connection
         self.__message_bus.onMessage = self.__on_message
         self.__on_message_handler = on_message_handler
         self.__tried_to_connect = False
+
+        # header time
+        self.last_header_timestamp = 0
+        self.use_header_timestamp = False
 
     # Returns the version_info dictionary read in from the config file
     def get_version_info(self):
@@ -92,6 +97,29 @@ class ASISTAgentHelper(object):
 
     def get_logger(self):
         return self.__logging
+
+    def set_use_header_time(self, val):
+        if val:
+            print('set_use_header_time', val)
+            self.use_header_timestamp = val
+        else:
+            print('Warn: use header time bad value given', val)
+
+    def update_header_timestamp(self, header):
+        if 'timestamp' in header:
+            ts = header['timestamp']
+            prev_ts = self.last_header_timestamp
+            if not prev_ts:
+                self.last_header_timestamp = ts
+                # print('last header ts,',ts)
+                return
+            ts_p = parse(ts)
+            prev_ts_p = parse(self.last_header_timestamp)
+            if ts_p >= prev_ts_p:
+                self.last_header_timestamp = ts
+                # print('last header ts,',ts)
+            else:
+                print(f'Warn: Header timestamp is stale: diff: {ts_p - prev_ts_p}, last: {prev_ts}, current: {ts} ')
 
     # Subscribe to a topic
     def subscribe(self, topic, message_type=None, sub_type=None):
@@ -139,7 +167,8 @@ class ASISTAgentHelper(object):
                 self.__logging.debug("Unsubscribed from topic: " + topic)
 
     def set_agent_state(self, state, message=None, active=True):
-        if state is None or state not in [self.STATE_OK, self.STATE_INFO, self.STATE_WARN, self.STATE_ERROR, self.STATE_FAIL]:
+        if state is None or state not in [self.STATE_OK, self.STATE_INFO, self.STATE_WARN, self.STATE_ERROR,
+                                          self.STATE_FAIL]:
             return False
         self.__agent_state = state
         self.__agent_state_msg = message
@@ -147,22 +176,29 @@ class ASISTAgentHelper(object):
         return True
 
     def set_agent_status(self, status):
-        if status is None or status not in [self.STATUS_INITIALIZING, self.STATUS_UP, self.STATUS_DOWN, self.STATE_ERROR]:
+        if status is None or status not in [self.STATUS_INITIALIZING, self.STATUS_UP, self.STATUS_DOWN,
+                                            self.STATE_ERROR]:
             return False
         self.__agent_status = status
         return True
 
     # returns an ASIST happy timestamp string for the current date and time
-    @staticmethod
-    def generate_timestamp():
+    # @staticmethod
+    def generate_timestamp(self):
+        # print(f'generate_timestamp use_header_timestamp {self.use_header_timestamp} ')
+        # print(f'last_header_timestamp {self.last_header_timestamp}')
+        if self.use_header_timestamp and self.last_header_timestamp:
+            # print('generate_timestamp last header ', self.last_header_timestamp)
+            return self.last_header_timestamp
+        # print('generate_timestamp real time', str(datetime.utcnow().isoformat()) + 'Z')
         return str(datetime.utcnow().isoformat()) + 'Z'
 
-    @staticmethod
-    def __generate_asist_header(message_type, timestamp=None, msg_version="1.1"):
+    # @staticmethod
+    def __generate_asist_header(self, message_type, timestamp=None, msg_version="1.1"):
         if message_type is None:
             message_type = "unknown"
         if timestamp is None:
-            timestamp = ASISTAgentHelper.generate_timestamp()
+            timestamp = self.generate_timestamp()
         return {
             "timestamp": timestamp,
             "message_type": message_type,
@@ -175,7 +211,8 @@ class ASISTAgentHelper(object):
     #  - If trial_key is None (default) then the latest running trial info (experiment_id, trial_id, replay_id, ...)
     #    will be used in the 'msg' object.  If it is specified, then it will be used to generate this info.
     #  - msg_version defaults to 1.1 if it is not passed in
-    def send_msg(self, topic, message_type, sub_type, sub_type_version, timestamp=None, data=None, trial_key=None, msg_version="1.1"):
+    def send_msg(self, topic, message_type, sub_type, sub_type_version, timestamp=None, data=None, trial_key=None,
+                 msg_version="1.1"):
         json_dict = {"header": self.__generate_asist_header(message_type, timestamp, msg_version), "msg": {}}
 
         json_dict["msg"]["sub_type"] = sub_type
@@ -305,6 +342,8 @@ class ASISTAgentHelper(object):
             msg = message.jsondata['msg'] if 'msg' in message.jsondata else {}
             data = message.jsondata['data'] if 'data' in message.jsondata else {}
 
+            self.update_header_timestamp(header)
+
             self.__logging.debug("topic: " + topic)
             if msg is not None:
                 self.__logging.debug("msg: " + str(msg))
@@ -348,7 +387,8 @@ class ASISTAgentHelper(object):
 
     def __publish_agent_version_message(self, trial_key):
         self.__logging.debug("Publishing Agent Version Message.")
-        self.send_msg("agent/" + self.agent_name + "/versioninfo", "agent", "versioninfo", "0.1", trial_key=trial_key, data=self.__version_info, msg_version="0.6")
+        self.send_msg("agent/" + self.agent_name + "/versioninfo", "agent", "versioninfo", "0.1", trial_key=trial_key,
+                      data=self.__version_info, msg_version="0.6")
 
     def __publish_rollcall_message(self, rollcall_id, trial_key):
         data = {
@@ -357,7 +397,8 @@ class ASISTAgentHelper(object):
             "status": self.__agent_status,
             "uptime": (datetime.now() - self.__agent_start_time).total_seconds()
         }
-        self.send_msg("agent/control/rollcall/response", "agent", "rollcall:response", "0.1", trial_key=trial_key, data=data, msg_version="0.6")
+        self.send_msg("agent/control/rollcall/response", "agent", "rollcall:response", "0.1", trial_key=trial_key,
+                      data=data, msg_version="0.6")
         self.__logging.debug("Published roll call response for rollcall_id: " + rollcall_id)
 
     def __publish_heartbeat_message(self):
@@ -368,5 +409,6 @@ class ASISTAgentHelper(object):
             data['status'] = self.__agent_state_msg
         if not self.__agent_state_active:
             data['active'] = False
-        self.send_msg("status/" + self.agent_name + "/heartbeats", "status", "heartbeat", "0.3", data=data, msg_version="0.1")
+        self.send_msg("status/" + self.agent_name + "/heartbeats", "status", "heartbeat", "0.3", data=data,
+                      msg_version="0.1")
         self.__logging.debug("Published heartbeat.")
