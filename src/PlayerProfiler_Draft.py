@@ -799,7 +799,8 @@ def make_player_profile(TaskPotential_Category, TeamPotential_Category):
 
 def compute_player_profile(sbsod_score, vgem_score,
                            psychological_collectivism_score, rmet_score,
-                           sociableDominance_score):
+                           sociableDominance_score,
+                           competency_score):
     if sbsod_score > SBSOD_MedianCutoff:
         SBSOD_MedianSplit_Score = 1
     else:
@@ -812,7 +813,7 @@ def compute_player_profile(sbsod_score, vgem_score,
         VGEM_MinecraftUSAR_MedianSplit_Score = 0
     print("VGEM_MinecraftUSAR_MedianSplit_Score: ", VGEM_MinecraftUSAR_MedianSplit_Score)
 
-    if Competency_Score < Competency_MedianCutoff:
+    if competency_score < Competency_MedianCutoff:
         Competency_MedianSplit_Score = 1
     else:
         Competency_MedianSplit_Score = 0
@@ -877,7 +878,7 @@ def compute_player_profile(sbsod_score, vgem_score,
 def main():
     compute_player_profile(SBSOD_Score, VGEM_MinecraftUSAR_Score,
                            PsychologicalCollectivism_Score, RMET_Score,
-                           SociableDominance_Score)
+                           SociableDominance_Score, Competency_Score)
 
 if __name__ == "__main__":
     main()

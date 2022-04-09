@@ -26,6 +26,9 @@ def process_metadata_file(fname):
         trial_id = msg['trial_id']
         message_type = header['message_type']
         sub_type = msg['sub_type']
+        topic = None
+        if 'topic' in m:
+            topic = m['topic']
 
         if 'elapsed_milliseconds' in dat:
             elapsed_ms = dat['elapsed_milliseconds']
@@ -38,7 +41,7 @@ def process_metadata_file(fname):
                 for pid, p in PlayerModel.playerstate.players.items():
                     if 'update_180' in p:
                         PlayerModel.playerstate.set_dynamic_profile(pid, p)
-                        print('for participant_id', pid)
+                        print('with metadata publishing player profile 180 timeout for participant_id', pid)
                         pprint(p['update_180'])
 
         if message_type == 'trial' and sub_type == 'start':
@@ -47,19 +50,30 @@ def process_metadata_file(fname):
 
         if message_type == 'trial' and sub_type == 'stop':
             # pprint(m)
-            PlayerModel.playerstate.handle_trial_stop(dat, exp_id, trial_id, 'with_file_players.txt')
+            PlayerModel.playerstate.handle_trial_stop(dat, exp_id, trial_id, 'with_file')
 
         if sub_type == 'Event:PlanningStage':
             PlayerModel.playerstate.handle_planning_event(dat, exp_id, trial_id)
 
+        if sub_type == 'Event:CompetencyTask':
+            print(f'Topic {topic}')
+            PlayerModel.playerstate.handle_competency_task(dat, exp_id, trial_id)
+
         if sub_type == 'Status:SurveyResponse':
+            pid = dat['values']['participantid']
+            has_survey_name = False
+            if 'surveyname' in dat['values']:
+                has_survey_name = True
+            print(
+                f'msg SurveyResponse \nexp_id {exp_id} \ntrial_id {trial_id}\n participantid {pid} \nhas? surveyname {has_survey_name}')
+            # pprint(dat['values'])
             vals = PlayerModel.playerstate.handle_survey_values(dat['values'],
                                                                 exp_id, trial_id)
             # pprint(vals)
             pp = vals['player_profile']
             if pp:
                 PlayerModel.playerstate.handle_static_player_profile(pp)
-                print('with metadata publishing static player profile')
+                print('with metadata publishing player profile for survey response')
                 pprint(pp)
 
         if sub_type == 'Event:MissionState':

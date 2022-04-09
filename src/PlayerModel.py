@@ -1,6 +1,7 @@
 # Copyright 2022 Dynamic Object Language Labs Inc.
 # DISTRIBUTION STATEMENT C: U.S. Government agencies and their contractors.
 # Other requests shall be referred to DARPA’s Public Release Center via email at prc@darpa.mil.
+import copy
 import sys
 from pprint import pprint
 import PlayerProfiler_Draft as player_profiler
@@ -355,14 +356,22 @@ class PlayerState:
             print(f'Elapsed time not updated. prev {self.elapsed_time} => {elapsed_ms} {delta}')
         return False
 
-    def handle_trial_stop(self, dat, exp_id, trial_id, fname):
+    def handle_trial_stop(self, dat, exp_id, trial_id, prefix):
         print(f'--- Trial stop: {trial_id}')
         if self.elapsed_time != -1:
             print(f'WARN: Trial stop: {trial_id} elapsed_time is {self.elapsed_time}. Missing Event:MissionStop ')
             self.elapsed_time = -1  # force if we have not received mission stop
         # hack
         # metadata_utils.write_json(self.players, fname)
-        metadata_utils.write_to_file(self.players, fname)
+        fname = f'{prefix}-experiment-players-final.{exp_id}.txt'
+        return metadata_utils.write_to_file(self.get_without_dynamic_profile(), fname)
+
+    def get_without_dynamic_profile(self):
+        copied = copy.deepcopy(self.players)
+        for pid, val in copied.items():
+            if 'dynamic_profile' in val:
+                del val['dynamic_profile']
+                return copied
 
     def handle_trial_start(self, dat, exp_id, trial_id):
         if self.elapsed_time != -1:
@@ -376,28 +385,33 @@ class PlayerState:
         pprint(client_info)
         for ci in client_info:
             participant_id = ci['participant_id']
-            callsign = ci['callsign']
-            role = None
-            if callsign not in player_dynamic.role_lookup:
-                print('Warn: We don\'t have role for call sign', callsign)
+            if len(participant_id) > 0:
+                callsign = ci['callsign']
+                role = None
+                if callsign not in player_dynamic.role_lookup:
+                    print('Warn: We don\'t have role for call sign', callsign)
+                else:
+                    role = player_dynamic.role_lookup[callsign]
+                print(f'Got {participant_id}: {callsign} => {role}')
+                if participant_id not in self.players:
+                    self.players[participant_id] = self.make_new_player(exp_id, trial_id)
+                if trial_id not in self.players[participant_id]['trials']:
+                    self.players[participant_id]['trials'].append(trial_id)
+                if 'callsign' in self.players[participant_id]:
+                    old = self.players[participant_id]['callsign']
+                    if old != callsign:
+                        print(f'Player {participant_id} call sign changed: {old} -> {callsign}')
+                self.players[participant_id]['callsign'] = callsign
+                if 'role' in self.players[participant_id]:
+                    old = self.players[participant_id]['role']
+                    if old != role:
+                        print(f'Player {participant_id} role changed: {old} -> {role}')
+                self.players[participant_id]['role'] = role
+                player_dynamic.have_static_profile(participant_id, self.players[participant_id])
             else:
-                role = player_dynamic.role_lookup[callsign]
-            print(f'Got {participant_id}: {callsign} => {role}')
-            if participant_id not in self.players:
-                self.players[participant_id] = self.make_new_player(exp_id, trial_id)
-            if trial_id not in self.players[participant_id]['trials']:
-                self.players[participant_id]['trials'].append(trial_id)
-            if 'callsign' in self.players[participant_id]:
-                old = self.players[participant_id]['callsign']
-                if old != callsign:
-                    print(f'Player {participant_id} call sign changed: {old} -> {callsign}')
-            self.players[participant_id]['callsign'] = callsign
-            if 'role' in self.players[participant_id]:
-                old = self.players[participant_id]['role']
-                if old != role:
-                    print(f'Player {participant_id} role changed: {old} -> {role}')
-            self.players[participant_id]['role'] = role
-            player_dynamic.have_static_profile(participant_id, self.players[participant_id])
+                pname = ci['playername']
+                # pprint(ci)
+                print(f'Warn: Invalid Player {pname} participant_id len 0 ')
 
     def make_new_player(self, exp_id, trial_id):
         return {'experiment_id': exp_id,
@@ -431,14 +445,46 @@ class PlayerState:
                 'TaskPotential_Factors_List': []
                 }
 
+    def handle_competency_task(self, dat, exp_id, trial_di):
+        # print('competency')
+        # pprint(dat)
+        pid = dat['participant_id']
+        task: str = dat['task_message']
+        ts = dat['elapsed_milliseconds']
+        print(f'{pid} {task} {ts}')
+        if pid not in self.players:
+            print(f'participant_id {pid} not found.')
+            return
+        if 'Competency: Start' in task:
+            self.players[pid]['competency_start'] = ts
+        elif 'Competency: End' in task:
+            self.players[pid]['competency_end'] = ts
+        else:
+            print(f'Ignoring competency task: {task}')
+
+    def get_competency_score(self, participant_id):
+        if 'competency_start' in self.players[participant_id] and 'competency_end' in self.players[participant_id]:
+            start = self.players[participant_id]['competency_start']
+            end = self.players[participant_id]['competency_end']
+            return end - start
+        if not 'competency_start' in self.players[participant_id]:
+            print(f'Warn: No competency_start for participant_id {participant_id}')
+        if not 'competency_end' in self.players[participant_id]:
+            print(f'Warn: No competency_end for participant_id {participant_id}')
+        return player_profiler.Competency_Score
+
     def handle_survey_values(self, vals, exp_id, trial_id):
         survey_name = vals['surveyname']
         if not self.is_intake_survey(survey_name):
             print(f'Not handling survey: {survey_name}')
             return {'player_profile': None}
 
+        if self.is_training_mission():
+            print(f'Training mission. Not handling survey {survey_name}')
+            return {'player_profile': None}
+
         participant_id = vals['participantid']
-        print(f'\nGot survey: {survey_name} for participant: {participant_id}')
+        print(f'\nGot survey: {survey_name} for participant: {participant_id} mission: {self.map_name}')
         dy_player_info = self.players[participant_id]['dynamic_profile']
         if dy_player_info:
             print(f'Found dynamic player profile {participant_id}')
@@ -565,13 +611,15 @@ class PlayerState:
         sc_score = player_profiler.get_PsychologicalCollectivism_Score(converted['psychologicalcollectivism'])
         social_dominance_score = player_profiler.get_SociableDominance_Score(converted['sociabledominance'])
         rmet_score = player_profiler.get_rmet_score(converted['rmet'])
+        competency_score = self.get_competency_score(participant_id)
         print('sbsod score', sbsod_score)
         print('vgem score', vgem_score)
         print('psychological collectivism score', sc_score)
         print('sociable dominance score', social_dominance_score)
         print('rmet score', rmet_score)
+        print(f'competency_score {competency_score}')
         player_profile = player_profiler.compute_player_profile(sbsod_score, vgem_score, sc_score,
-                                                                rmet_score, social_dominance_score)
+                                                                rmet_score, social_dominance_score, competency_score)
         player_profile['participant_id'] = participant_id
         player_profile['callsign'] = 'not_available'
         player_profile['role'] = 'not_available'

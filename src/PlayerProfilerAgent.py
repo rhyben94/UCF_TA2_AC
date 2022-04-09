@@ -71,8 +71,9 @@ def check_and_handle_180_timeout(trial_id):
 
 # This is the function which is called when a message is received for a to
 # topic which this Agent is subscribed to.
+competency_count = 0
 def on_message(topic, header, msg, data, mqtt_message):
-    global helper, extra_info, logger
+    global helper, extra_info, logger, competency_count
     exp_id = msg['experiment_id']
     trial_id = msg['trial_id']
     sub_type = msg['sub_type']
@@ -85,7 +86,7 @@ def on_message(topic, header, msg, data, mqtt_message):
     # print('-----\n')
 
     update_time(data, trial_id)
-
+    # print(f'topic {topic}')
     # logger.info("Received a message on the topic: " + topic + ' sub_type: ' + sub_type)
     # Now handle the message based on the topic.  Refer to Message Specs for the contents of header, msg, and data
     if topic == 'trial' and sub_type == 'start':
@@ -99,11 +100,16 @@ def on_message(topic, header, msg, data, mqtt_message):
         print("Received a message on the topic: " + topic)
         print(" - Trial Stopped with Mission set to: " + data['experiment_mission'])
         # FIXME for docker
-        PlayerModel.playerstate.handle_trial_stop(data, exp_id, trial_id, 'agent_players.txt')
+        PlayerModel.playerstate.handle_trial_stop(data, exp_id, trial_id, 'agent')
 
     if sub_type == 'Status:SurveyResponse':
         # logger.info("Received a message on the topic: " + topic)
         handle_survey_message(data, exp_id, trial_id)
+
+    if sub_type == 'Event:CompetencyTask':
+        competency_count = competency_count + 1
+        print(f'topic {topic} {competency_count}')
+        PlayerModel.playerstate.handle_competency_task(data, exp_id, trial_id)
 
     if sub_type == 'Event:MissionState':
         PlayerModel.playerstate.handle_mission_state(data)
@@ -157,6 +163,7 @@ def on_message(topic, header, msg, data, mqtt_message):
 
 # Agent Initialization
 helper = ASISTAgentHelper(on_message)
+helper.set_use_header_time(True)
 
 # Set the helper's logging level to INFO
 LOG_HANDLER = logging.StreamHandler()

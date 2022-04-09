@@ -8,6 +8,8 @@ import argparse
 import json
 import copy
 import os
+from pathlib import Path
+
 from dateutil.parser import parse
 from pprint import pprint
 from pprint import pformat
@@ -54,13 +56,23 @@ def write_json(jsn, fname):
 
 
 def write_to_file(obj, fname):
-    copied = copy.deepcopy(obj) #obj.copy()
-    for pid, val in copied.items():
-        if 'dynamic_profile' in val:
-            del val['dynamic_profile']
-    str = pformat(copied)
-    text_file = open(fname, "w")
-    text_file.write(str)
+    out_f = fname
+    if 'ucf_out_dir' in os.environ:
+        out_dir = Path(os.environ['ucf_out_dir'])
+        print(f'Exists {out_dir.exists()}')
+        if not out_dir.exists():
+            print(f'Creating {out_dir}')
+            out_dir.mkdir()
+        else:
+            print(f'Not creating {out_dir}')
+        out_f = out_dir.joinpath(fname)
+    else:
+        print('ucf_out_dir env var is not set')
+
+    print(f'Writing to file {out_f}')
+    txt = pformat(obj)
+    text_file = open(out_f, "w")
+    text_file.write(txt)
     text_file.close()
 
 
