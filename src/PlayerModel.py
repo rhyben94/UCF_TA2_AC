@@ -364,7 +364,9 @@ class PlayerState:
         # hack
         # metadata_utils.write_json(self.players, fname)
         fname = f'{prefix}-experiment-players-final.{exp_id}.txt'
-        return metadata_utils.write_to_file(self.get_without_dynamic_profile(), fname)
+        complete_state = self.get_without_dynamic_profile()
+        metadata_utils.write_to_file(complete_state, fname)
+        return complete_state
 
     def get_without_dynamic_profile(self):
         copied = copy.deepcopy(self.players)

@@ -21,6 +21,16 @@ def handle_trial_start(dat, exp_id, trial_id):
     PlayerModel.playerstate.handle_trial_start(dat, exp_id, trial_id)
 
 
+def publish_complete_state(complete_state, trial_id):
+    topic = f'agent/{helper.agent_name}/playerprofile_complete_state'
+    msg_type = 'agent'
+    sub_type = 'playerprofile:completestate'
+    sub_type_version = 0.1
+    print('Publishing complete state of AC: PlayerProfile')
+    # pprint(complete_state)
+    helper.send_msg(topic, msg_type, sub_type, sub_type_version, data=complete_state, trial_key=trial_id)
+
+
 def send_message(player_profile, trial_id):
     topic = f'agent/{helper.agent_name}/playerprofile'
     msg_type = 'agent'
@@ -72,6 +82,8 @@ def check_and_handle_180_timeout(trial_id):
 # This is the function which is called when a message is received for a to
 # topic which this Agent is subscribed to.
 competency_count = 0
+
+
 def on_message(topic, header, msg, data, mqtt_message):
     global helper, extra_info, logger, competency_count
     exp_id = msg['experiment_id']
@@ -100,7 +112,8 @@ def on_message(topic, header, msg, data, mqtt_message):
         print("Received a message on the topic: " + topic)
         print(" - Trial Stopped with Mission set to: " + data['experiment_mission'])
         # FIXME for docker
-        PlayerModel.playerstate.handle_trial_stop(data, exp_id, trial_id, 'agent')
+        complete_state = PlayerModel.playerstate.handle_trial_stop(data, exp_id, trial_id, 'agent')
+        publish_complete_state(complete_state, trial_id)
 
     if sub_type == 'Status:SurveyResponse':
         # logger.info("Received a message on the topic: " + topic)
