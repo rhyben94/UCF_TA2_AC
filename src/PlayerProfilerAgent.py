@@ -108,7 +108,7 @@ def on_message(topic, header, msg, data, mqtt_message):
 
     if sub_type == 'Event:CompetencyTask':
         competency_count = competency_count + 1
-        print(f'topic {topic} {competency_count}')
+        print(f'competency_count {competency_count}')
         PlayerModel.playerstate.handle_competency_task(data, exp_id, trial_id)
 
     if sub_type == 'Event:MissionState':

@@ -148,8 +148,9 @@ class RawConnection(object):
 
     # Subscribe
     def subscribe(self, topic):
-        print('subscribe qos = 2')
-        self.__mqttc.subscribe(topic, qos=2)
+        qos = 2
+        print(f'subscribe {topic} qos = {qos}')
+        self.__mqttc.subscribe(topic, qos=qos)
 
     # deliver messages that match subscription filter to callback.
     # only messages that don't match any callbacks will be delivered to onMessage callback.
