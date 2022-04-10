@@ -371,7 +371,7 @@ class PlayerState:
         for pid, val in copied.items():
             if 'dynamic_profile' in val:
                 del val['dynamic_profile']
-                return copied
+        return copied
 
     def handle_trial_start(self, dat, exp_id, trial_id):
         if self.elapsed_time != -1:
