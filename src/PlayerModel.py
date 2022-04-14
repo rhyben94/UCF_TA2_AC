@@ -290,10 +290,16 @@ class PlayerState:
         self.elapsed_time = -1  # -1 implies mission ended
         self.last_factor_window = 0
         self.planning_time = 120 * 1000  # first 2 minutes is planning time
+        self.trial_active = False
         # print('QID set', len(self.req_qid_set))
 
     def check_180_timeout(self):
         ret_data = False
+
+        if not self.trial_active:
+            if self.elapsed_time % (180 * 1000) == 0:
+                print(f'Trial not active {self.map_name}. Not doing 180 timeout at {self.elapsed_time}')
+            return ret_data
 
         if self.is_training_mission():
             # print(f'training mission {self.elapsed_time % (180 * 1000)}')
@@ -333,7 +339,7 @@ class PlayerState:
         return player_profile
 
     def handle_180_timeout(self):
-        print(f'handle_180_timeout count {self.last_factor_window} at {self.elapsed_time}')
+        print(f'handle_180_timeout count {self.last_factor_window} at {self.elapsed_time} trial active? {self.trial_active}')
         my_adjusted_factor = self.last_factor_window - index_adjustment_180
         if 0 <= my_adjusted_factor < player_dynamic.max_index_180_timeout:
             self.check_static_profile_and_add()
@@ -358,8 +364,9 @@ class PlayerState:
 
     def handle_trial_stop(self, dat, exp_id, trial_id, prefix):
         print(f'--- Trial stop: {trial_id}')
+        self.trial_active = False
         if self.elapsed_time != -1:
-            print(f'WARN: Trial stop: {trial_id} elapsed_time is {self.elapsed_time}. Missing Event:MissionStop ')
+            print(f'WARN: Trial stop: {trial_id} elapsed_time is {self.elapsed_time}. ')
             self.elapsed_time = -1  # force if we have not received mission stop
         # hack
         # metadata_utils.write_json(self.players, fname)
@@ -376,6 +383,7 @@ class PlayerState:
         return copied
 
     def handle_trial_start(self, dat, exp_id, trial_id):
+        self.trial_active = True
         if self.elapsed_time != -1:
             print(f'WARN: Trial start: {trial_id} elapsed_time is {self.elapsed_time}. Resetting to -1 ')
             self.elapsed_time = -1
