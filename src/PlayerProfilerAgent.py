@@ -26,8 +26,8 @@ def publish_complete_state(complete_state, trial_id):
     msg_type = 'agent'
     sub_type = 'playerprofile:completestate'
     sub_type_version = 0.1
-    print('Publishing complete state of AC: PlayerProfile')
-    # pprint(complete_state)
+    print(f'Publishing complete state of AC: PlayerProfile {trial_id}')
+    print(f'complete_state: {complete_state}')
     helper.send_msg(topic, msg_type, sub_type, sub_type_version, data=complete_state, trial_key=trial_id)
 
 
@@ -36,7 +36,7 @@ def send_message(player_profile, trial_id):
     msg_type = 'agent'
     sub_type = 'playerprofile'
     sub_type_version = 0.1
-    print('send_message publishing player profile')
+    print('send_message publishing player_profile')
     pprint(player_profile)
     helper.send_msg(topic, msg_type, sub_type, sub_type_version, data=player_profile, trial_key=trial_id)
 
